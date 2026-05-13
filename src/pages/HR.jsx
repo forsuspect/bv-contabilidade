@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useData } from '../context/DataContext';
-import { Users, DollarSign, FileText, Plus, Search, Filter, MoreVertical, Download, X } from 'lucide-react';
+import { Users, DollarSign, FileText, Plus, Search, Download, X, AlertTriangle } from 'lucide-react';
 import styles from './HR.module.css';
 
 const HR = () => {
@@ -10,6 +10,7 @@ const HR = () => {
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState({ name: '', companyId: '', role: '', salary: '', cpf: '' });
   const [editingEmployee, setEditingEmployee] = useState(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
 
 
   const safeEmployees = Array.isArray(employees) ? employees : [];
@@ -34,11 +35,15 @@ const HR = () => {
   };
 
 
-  const handleDelete = async (id) => {
-    if (window.confirm('Tem certeza que deseja remover este funcionário?')) {
-      await deleteEmployee(id);
-    }
+  const handleDelete = (id) => {
+    setConfirmDeleteId(id);
   };
+
+  const executeDelete = async () => {
+    await deleteEmployee(confirmDeleteId);
+    setConfirmDeleteId(null);
+  };
+
 
   const handleDownload = () => {
     const headers = ['Funcionário', 'Empresa', 'Cargo', 'Salário', 'Status'];
@@ -233,8 +238,26 @@ const HR = () => {
           </div>
         </div>
       )}
+      {confirmDeleteId && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalCardForm} style={{ textAlign: 'center', maxWidth: '420px' }}>
+            <div style={{ padding: '2rem' }}>
+              <AlertTriangle size={40} color="#ef4444" style={{ marginBottom: '1rem' }} />
+              <h3 className={styles.modalTitle}>Remover Funcionário</h3>
+              <p style={{ color: 'var(--text-light)', margin: '0.75rem 0 1.5rem' }}>
+                Tem certeza que deseja remover este funcionário? Esta ação não pode ser desfeita.
+              </p>
+              <div className={styles.modalActionsForm}>
+                <button className={styles.cancelBtn} onClick={() => setConfirmDeleteId(null)}>Cancelar</button>
+                <button className={styles.deleteBtnRow} style={{ padding: '0.75rem 1.5rem', fontSize: '0.9rem' }} onClick={executeDelete}>Sim, Remover</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
 export default HR;
+
