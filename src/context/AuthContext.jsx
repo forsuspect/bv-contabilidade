@@ -29,28 +29,6 @@ export const AuthProvider = ({ children }) => {
           localStorage.setItem('bv_user', JSON.stringify(foundUser));
           setUser(foundUser);
           resolve(foundUser);
-        } else if (username === 'admin' && password === 'admin') {
-          const userData = {
-            id: '1',
-            username: 'admin',
-            name: 'Desenvolvedor Sistema',
-            role: 'DESENVOLVEDOR',
-            avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=dev'
-          };
-          localStorage.setItem('bv_user', JSON.stringify(userData));
-          setUser(userData);
-          resolve(userData);
-        } else if (username === 'contabil' && password === '1234') {
-          const userData = {
-            id: '2',
-            username: 'contabil',
-            name: 'Contador BV',
-            role: 'CONTADOR',
-            avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=contador'
-          };
-          localStorage.setItem('bv_user', JSON.stringify(userData));
-          setUser(userData);
-          resolve(userData);
         } else {
           reject(new Error('Usuário ou senha inválidos'));
         }
