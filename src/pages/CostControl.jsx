@@ -2,21 +2,41 @@ import React, { useState } from 'react';
 import { useData } from '../context/DataContext';
 import { 
   DollarSign, TrendingUp, TrendingDown, PieChart as PieChartIcon, 
-  ArrowUpRight, ArrowDownRight, Calendar, Filter, Download
+  ArrowUpRight, ArrowDownRight, Calendar, Filter, Download,
+  Plus, Trash2, X
 } from 'lucide-react';
 import { toast } from '../utils/toast';
 import styles from './Dashboard.module.css'; // Usando estilos do dashboard para manter o padrão premium
 
+import { useAuth } from '../context/AuthContext';
+
 const CostControl = () => {
-  const { costs = [], addCost, deleteCost, apurations = [] } = useData();
+  const { user: currentUser } = useAuth();
+  const { costs = [], addCost, deleteCost, apurations = [], appUsers = [] } = useData();
+  
+  const isAdmin = ['DESENVOLVEDOR', 'DONO', 'SOCIO', 'ADMIN'].includes(currentUser?.role);
+  const externalClients = appUsers.filter(u => u.role === 'CLIENTE_EXTERNO');
+  
+  const [targetUserId, setTargetUserId] = useState(currentUser?.id);
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [showAddForm, setShowAddForm] = useState(false);
   const [formData, setFormData] = useState({ description: '', category: 'Operacional', value: '', date: new Date().toISOString().split('T')[0] });
 
-  // Filtrar dados pelo mês/ano selecionado
+  // Se o usuário logado mudar ou for admin, garantir que temos um target
+  // Mas vamos deixar o admin escolher. Se for cliente, trava no ID dele.
+  const effectiveUserId = isAdmin ? targetUserId : currentUser?.id;
+
+  // Filtrar dados pelo usuário selecionado e mês/ano
   const currentYear = new Date().getFullYear();
-  const filteredApurations = apurations.filter(a => Number(a.mes) === Number(selectedMonth) && Number(a.ano) === currentYear);
-  const filteredCosts = costs.filter(c => new Date(c.date).getMonth() + 1 === Number(selectedMonth));
+  const filteredApurations = apurations.filter(a => 
+    a.userId === effectiveUserId && 
+    Number(a.mes) === Number(selectedMonth) && 
+    Number(a.ano) === currentYear
+  );
+  const filteredCosts = costs.filter(c => 
+    c.userId === effectiveUserId && 
+    new Date(c.date).getMonth() + 1 === Number(selectedMonth)
+  );
 
   const totalRevenue = filteredApurations.reduce((s, a) => s + Number(a.faturamento), 0);
   const totalTaxes = filteredApurations.reduce((s, a) => s + Number(a.imposto), 0);
@@ -27,6 +47,7 @@ const CostControl = () => {
     if (!formData.description || !formData.value) { toast('Preencha os campos obrigatórios.', 'error'); return; }
     addCost({
       ...formData,
+      userId: effectiveUserId,
       value: parseFloat(formData.value.toString().replace(',', '.'))
     });
     setFormData({ description: '', category: 'Operacional', value: '', date: new Date().toISOString().split('T')[0] });
@@ -39,7 +60,24 @@ const CostControl = () => {
       <header className={styles.header}>
         <div>
           <h1 className={styles.title}>Controle de Custos</h1>
-          <p className={styles.subtitle}>Gestão financeira e análise de despesas operacionais.</p>
+          {isAdmin ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', marginTop: '0.5rem' }}>
+              <span style={{ fontSize: '0.875rem', color: '#64748b' }}>Gerenciando cliente:</span>
+              <select 
+                className={styles.monthSelect} 
+                value={targetUserId} 
+                onChange={e => setTargetUserId(e.target.value)}
+                style={{ padding: '0.4rem 0.8rem', fontSize: '0.875rem', fontWeight: 600, border: '2px solid #3b82f6', color: '#3b82f6' }}
+              >
+                <option value={currentUser?.id}>Meu Próprio Controle</option>
+                {externalClients.map(u => (
+                  <option key={u.id} value={u.id}>{u.name} (@{u.username})</option>
+                ))}
+              </select>
+            </div>
+          ) : (
+            <p className={styles.subtitle}>Gestão financeira e análise de despesas operacionais.</p>
+          )}
         </div>
         <div className={styles.quickActions}>
           <select className={styles.monthSelect} value={selectedMonth} onChange={e => setSelectedMonth(e.target.value)} style={{ padding: '0.6rem', borderRadius: '8px', border: '1px solid #e2e8f0', marginRight: '1rem' }}>

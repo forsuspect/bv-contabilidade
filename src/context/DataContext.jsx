@@ -355,7 +355,9 @@ export const DataProvider = ({ children }) => {
   // Custos
   const addCost = async (cost) => {
     if (!currentUserId) return;
-    const { error } = await supabase.from('costs').insert([{ ...toSnakeCase(cost), user_id: currentUserId }]);
+    const targetUserId = cost.userId || currentUserId;
+    const { userId, ...cleanCost } = cost;
+    const { error } = await supabase.from('costs').insert([{ ...toSnakeCase(cleanCost), user_id: targetUserId }]);
     if (error) {
       console.error('Erro ao adicionar custo:', error);
       toast('Erro ao salvar custo.', 'error');
