@@ -24,10 +24,31 @@ import {
 import styles from './Dashboard.module.css';
 
 const Dashboard = () => {
-  const { companies, documents = [], activities = [] } = useAppData();
+  const { companies = [], documents = [], activities = [], obligations = [], apurations = [] } = useAppData();
   const { user } = useAuth();
 
   const isManagement = ['DESENVOLVEDOR', 'DONO', 'SOCIO'].includes(user?.role);
+
+  const now = new Date();
+  const currentMonth = now.getMonth() + 1;
+  const currentYear = now.getFullYear();
+
+  // Cálculo de Impostos do Mês
+  const totalImpostosMes = apurations
+    .filter(ap => ap.mes === currentMonth && ap.ano === currentYear)
+    .reduce((sum, ap) => sum + (Number(ap.imposto) || 0), 0);
+
+  // Empresas que faltam apurar este mês
+  const pendentesApuracao = companies.filter(company => 
+    !apurations.some(ap => ap.companyId === company.id && ap.mes === currentMonth && ap.ano === currentYear)
+  );
+
+  // Obrigações próximas (vencem nos próximos 5 dias)
+  const lembretesObrigações = obligations.filter(ob => {
+    const isThisMonth = ob.month === 0 || ob.month === currentMonth;
+    const isSoon = ob.day >= now.getDate() && ob.day <= now.getDate() + 5;
+    return isThisMonth && isSoon;
+  });
 
   const stats = [
     { 
@@ -39,30 +60,21 @@ const Dashboard = () => {
       color: '#3b82f6'
     },
     { 
-      label: 'Atividades Recentes', 
-      value: activities.length, 
-      icon: <Clock />, 
-      change: 'Novo', 
+      label: 'Impostos Apurados (Mês)', 
+      value: `R$ ${totalImpostosMes.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, 
+      icon: <DollarSign />, 
+      change: 'Calculado', 
       isPositive: true,
-      color: '#f59e0b'
+      color: '#10b981'
     },
     { 
       label: 'Documentos na Nuvem', 
       value: documents.length.toString(), 
       icon: <FileText />, 
-      change: '0%', 
+      change: 'Seguro', 
       isPositive: true,
       color: '#8b5cf6'
     },
-  ];
-
-  const chartData = [
-    { name: 'Jan', value: 4000 },
-    { name: 'Fev', value: 3000 },
-    { name: 'Mar', value: 2000 },
-    { name: 'Abr', value: 2780 },
-    { name: 'Mai', value: 1890 },
-    { name: 'Jun', value: 2390 },
   ];
 
   const handleExport = () => {
@@ -99,22 +111,111 @@ const Dashboard = () => {
               <h3 className={styles.statValue}>{stat.value}</h3>
               <div className={`${styles.statChange} ${stat.isPositive ? styles.positive : styles.negative}`}>
                 {stat.isPositive ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
-                {stat.change} <span>este mês</span>
+                {stat.change}
               </div>
             </div>
           </div>
         ))}
       </div>
 
-      <div className={styles.chartsGrid} style={{ gridTemplateColumns: '1fr' }}>
+      <div className={styles.dashboardGrid}>
+        {/* Coluna da Esquerda: Lembretes e Atividades */}
+        <div className={styles.leftCol}>
+          <div className={styles.reminderCard}>
+            <div className={styles.sectionHeader}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Clock size={20} color="#f59e0b" />
+                <h3 className={styles.sectionTitle}>Lembretes e Pendências</h3>
+              </div>
+            </div>
+            
+            <div className={styles.reminderList}>
+              {pendentesApuracao.length > 0 && (
+                <div className={styles.reminderGroup}>
+                  <p className={styles.groupLabel}>Apurar Faturamento (Mês Atual)</p>
+                  {pendentesApuracao.slice(0, 4).map(c => (
+                    <div key={c.id} className={styles.reminderItem}>
+                      <div className={styles.dot} style={{ background: '#ef4444' }} />
+                      <span>{c.name}</span>
+                      <small>Pendente</small>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {lembretesObrigações.length > 0 && (
+                <div className={styles.reminderGroup}>
+                  <p className={styles.groupLabel}>Vencimentos Próximos</p>
+                  {lembretesObrigações.map(ob => (
+                    <div key={ob.id} className={styles.reminderItem}>
+                      <div className={styles.dot} style={{ background: '#f59e0b' }} />
+                      <span>{ob.name}</span>
+                      <small>Dia {ob.day}</small>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {pendentesApuracao.length === 0 && lembretesObrigações.length === 0 && (
+                <p className={styles.emptyText}>Tudo em dia por aqui! ✨</p>
+              )}
+            </div>
+          </div>
+
+          {isManagement && (
+            <div className={styles.recentActivity}>
+              <div className={styles.sectionHeader}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <History size={20} color="#3b82f6" />
+                  <h3 className={styles.sectionTitle}>Atividades Recentes</h3>
+                </div>
+              </div>
+              <div className={styles.activityList}>
+                {activities.length === 0 ? (
+                  <p className={styles.emptyActivity}>Nenhuma atividade registrada ainda.</p>
+                ) : (
+                  activities.map((activity) => {
+                    let Icon = FileText;
+                    let color = '#8b5cf6';
+                    if (activity.type === 'COMPANY') { Icon = Building2; color = '#3b82f6'; }
+                    if (activity.type === 'HR') { Icon = Briefcase; color = '#10b981'; }
+                    if (activity.type === 'PAYROLL') { Icon = DollarSign; color = '#f59e0b'; }
+                    if (activity.type === 'FISCAL') { Icon = CheckCircle; color = '#10b981'; }
+
+                    return (
+                      <div key={activity.id} className={styles.activityItem}>
+                        <div className={styles.activityAvatar} style={{ backgroundColor: `${color}15`, color: color }}>
+                          <Icon size={20} />
+                        </div>
+                        <div className={styles.activityInfo}>
+                          <p className={styles.activityText}>{activity.description}</p>
+                          <p className={styles.activityTime}>{new Date(activity.timestamp).toLocaleString('pt-BR')}</p>
+                        </div>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Coluna da Direita: Gráfico */}
         <div className={styles.chartCard}>
           <div className={styles.chartHeader}>
-            <h3 className={styles.chartTitle}>Volume de Dados Processados</h3>
-            <p className={styles.chartSubtitle}>Últimos 6 meses</p>
+            <h3 className={styles.chartTitle}>Crescimento e Fluxo</h3>
+            <p className={styles.chartSubtitle}>Acompanhamento de performance</p>
           </div>
           <div className={styles.chartBody}>
-            <ResponsiveContainer width="100%" height={300}>
-              <AreaChart data={chartData}>
+            <ResponsiveContainer width="100%" height={350}>
+              <AreaChart data={[
+                { name: 'Jan', value: 400 },
+                { name: 'Fev', value: 700 },
+                { name: 'Mar', value: 600 },
+                { name: 'Abr', value: 900 },
+                { name: 'Mai', value: 1100 },
+                { name: 'Jun', value: 1500 },
+              ]}>
                 <defs>
                   <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3}/>
@@ -133,51 +234,10 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
-
-      {isManagement && (
-        <div className={styles.recentActivity}>
-          <div className={styles.sectionHeader}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <History size={20} color="var(--primary)" />
-              <h3 className={styles.sectionTitle}>Atividades Recentes</h3>
-            </div>
-            <button className={styles.viewAll}>Ver Tudo</button>
-          </div>
-          <div className={styles.activityList}>
-            {activities.length === 0 ? (
-              <p className={styles.emptyActivity}>Nenhuma atividade registrada ainda.</p>
-            ) : (
-              activities.map((activity, index) => {
-                let Icon = FileText;
-                let color = '#8b5cf6';
-                
-                if (activity.type === 'COMPANY') { Icon = Building2; color = '#3b82f6'; }
-                if (activity.type === 'HR') { Icon = Briefcase; color = '#10b981'; }
-                if (activity.type === 'PAYROLL') { Icon = DollarSign; color = '#f59e0b'; }
-                if (activity.type === 'DOC') { Icon = FileText; color = '#8b5cf6'; }
-
-                return (
-                  <div key={activity.id} className={styles.activityItem}>
-                    <div className={styles.activityAvatar} style={{ backgroundColor: `${color}15`, color: color }}>
-                      <Icon size={20} />
-                    </div>
-                    <div className={styles.activityInfo}>
-                      <p className={styles.activityText}>
-                        {activity.description}
-                      </p>
-                      <p className={styles.activityTime}>
-                        {new Date(activity.timestamp).toLocaleString('pt-BR')}
-                      </p>
-                    </div>
-                  </div>
-                );
-              })
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
+};
+
 };
 
 export default Dashboard;

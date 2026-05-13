@@ -19,6 +19,8 @@ export const DataProvider = ({ children }) => {
   const [documents, setDocuments] = useState([]);
   const [payrolls, setPayrolls] = useState([]);
   const [activities, setActivities] = useState([]);
+  const [obligations, setObligations] = useState([]);
+  const [apurations, setApurations] = useState([]);
 
   // Função auxiliar para converter camelCase para snake_case (Supabase padrão)
   const toSnakeCase = (obj) => {
@@ -41,9 +43,6 @@ export const DataProvider = ({ children }) => {
     return newObj;
   };
 
-
-
-
   // Função para carregar todos os dados
   const fetchData = async () => {
     if (!currentUserId) return;
@@ -55,6 +54,20 @@ export const DataProvider = ({ children }) => {
         .select('*')
         .eq('user_id', currentUserId);
       setCompanies(companiesData?.map(fromSnakeCase) || []);
+
+      // Buscar Obrigações
+      const { data: oblsData } = await supabase
+        .from('obligations')
+        .select('*')
+        .eq('user_id', currentUserId);
+      setObligations(oblsData?.map(fromSnakeCase) || []);
+
+      // Buscar Apurações
+      const { data: apurData } = await supabase
+        .from('fiscal_apurations')
+        .select('*')
+        .eq('user_id', currentUserId);
+      setApurations(apurData?.map(fromSnakeCase) || []);
 
       // Buscar Usuários (para o admin)
       const { data: usersData } = await supabase
@@ -94,7 +107,6 @@ export const DataProvider = ({ children }) => {
 
       
     } catch (err) {
-
       console.error('Erro ao carregar dados do Supabase:', err);
     }
   };
@@ -102,7 +114,7 @@ export const DataProvider = ({ children }) => {
   useEffect(() => {
     fetchData();
     
-    // Configurar Realtime (Opcional, mas recomendado para SaaS)
+    // Configurar Realtime
     const channel = supabase
       .channel('schema-db-changes')
       .on('postgres_changes', { event: '*', schema: 'public' }, () => {
@@ -125,6 +137,30 @@ export const DataProvider = ({ children }) => {
     }]);
   };
 
+  // Obrigações
+  const addObligation = async (ob) => {
+    if (!currentUserId) return;
+    const { error } = await supabase.from('obligations').insert([{ ...toSnakeCase(ob), user_id: currentUserId }]);
+    if (error) toast('Erro ao salvar obrigação', 'error');
+    else fetchData();
+  };
+
+  const deleteObligation = async (id) => {
+    const { error } = await supabase.from('obligations').delete().eq('id', id);
+    if (!error) fetchData();
+  };
+
+  // Apurações
+  const addApuracao = async (ap) => {
+    if (!currentUserId) return;
+    const { error } = await supabase.from('fiscal_apurations').insert([{ ...toSnakeCase(ap), user_id: currentUserId }]);
+    if (error) toast('Erro ao salvar apuração', 'error');
+    else {
+      await logActivity('FISCAL', `Nova apuração confirmada para ${ap.companyName || 'empresa'}.`);
+      fetchData();
+    }
+  };
+
   const addCompany = async (company) => {
     if (!currentUserId) return;
     
@@ -144,7 +180,6 @@ export const DataProvider = ({ children }) => {
       console.error('Erro ao adicionar empresa:', error);
       toast('Erro ao cadastrar empresa: ' + error.message, 'error');
     } else {
-
       await logActivity('COMPANY', `Empresa ${company.name} foi cadastrada.`);
       fetchData();
     }
@@ -184,7 +219,6 @@ export const DataProvider = ({ children }) => {
       console.error('Erro ao excluir usuário:', error);
       toast('Erro ao excluir usuário: ' + error.message, 'error');
     } else {
-
       fetchData();
     }
   }
@@ -203,16 +237,12 @@ export const DataProvider = ({ children }) => {
       user_id: currentUserId
     };
 
-
-    console.log('Enviando funcionário para Supabase:', dataToSave);
-    
     const { error } = await supabase.from('employees').insert([dataToSave]);
     
     if (error) {
       console.error('Erro ao adicionar funcionário:', error);
       toast('Erro ao cadastrar funcionário: ' + error.message, 'error');
     } else {
-
       await logActivity('HR', `Novo funcionário ${employee.name} cadastrado.`);
       fetchData();
     }
@@ -250,13 +280,10 @@ export const DataProvider = ({ children }) => {
       user_id: currentUserId
     };
 
-    console.log('Enviando documento para Supabase:', dataToSave);
-    
     const { error } = await supabase.from('documents').insert([dataToSave]);
     
     if (error) {
       console.error('Erro ao adicionar documento:', error);
-      // Fallback sem file_data se a coluna não existir
       if (error.message.includes('file_data')) {
         const { file_data, ...noFileData } = dataToSave;
         const { error: error2 } = await supabase.from('documents').insert([noFileData]);
@@ -268,7 +295,6 @@ export const DataProvider = ({ children }) => {
       }
       toast('Erro ao enviar documento: ' + error.message, 'error');
     } else {
-
       await logActivity('DOC', `Documento ${document.name} foi enviado.`);
       fetchData();
     }
@@ -320,9 +346,10 @@ export const DataProvider = ({ children }) => {
       employees, addEmployee, updateEmployee, deleteEmployee,
       documents, addDocument, deleteDocument,
       payrolls, addPayroll, updatePayrollStatus,
-      activities
+      activities,
+      obligations, addObligation, deleteObligation,
+      apurations, addApuracao
     }}>
-
       {children}
     </DataContext.Provider>
   );

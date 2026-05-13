@@ -102,16 +102,20 @@ const MiniCalendar = ({ obligations }) => {
 
 // Painel de obrigações com cadastro e apuração
 const ObligationsPanel = ({ company, onClose }) => {
+  const { obligations: allDbObligations, addObligation, deleteObligation, apurations: allDbApurations, addApuracao } = useData();
   const [activeTab, setActiveTab] = useState('fiscal');
   const regime = company.regime || 'SIMPLES_NACIONAL';
 
-  const [customObs, setCustomObs] = useState({ fiscal: [], labor: [], apuracao: [] });
   const [showAddForm, setShowAddForm] = useState(false);
   const [addForm, setAddForm] = useState({ name: '', day: '', month: '0' });
 
   // Apuração Fiscal state
-  const [apuracao, setApuracao] = useState({ faturamento: '', imposto: '', mes: new Date().getMonth() + 1, ano: new Date().getFullYear() });
-  const [historico, setHistorico] = useState([]);
+  const [apuracaoForm, setApuracaoForm] = useState({ faturamento: '', imposto: '', mes: new Date().getMonth() + 1, ano: new Date().getFullYear() });
+
+  // Filtrar dados da empresa atual
+  const companyCustomObs = allDbObligations.filter(ob => ob.companyId === company.id);
+  const companyApurations = allDbApurations.filter(ap => ap.companyId === company.id)
+    .sort((a, b) => b.ano - a.ano || b.mes - a.mes);
 
   const TAX_RATES = { SIMPLES_NACIONAL: 6, LUCRO_PRESUMIDO: 11.33, LUCRO_REAL: 15 };
   const taxRate = TAX_RATES[regime] || 6;
@@ -120,38 +124,45 @@ const ObligationsPanel = ({ company, onClose }) => {
     const raw = e.target.value.replace(/\D/g, '');
     const formatted = (Number(raw) / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
     const impostoCalc = ((Number(raw) / 100) * taxRate / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-    setApuracao(p => ({ ...p, faturamento: formatted, imposto: impostoCalc }));
+    setApuracaoForm(p => ({ ...p, faturamento: formatted, imposto: impostoCalc }));
   };
 
   const confirmarApuracao = () => {
-    if (!apuracao.faturamento) { toast('Informe o faturamento.', 'error'); return; }
-    const entry = {
-      ...apuracao,
-      mesNome: MONTH_NAMES[apuracao.mes],
-      confirmedAt: new Date().toLocaleDateString('pt-BR'),
-    };
-    setHistorico(p => [entry, ...p]);
-    setApuracao({ faturamento: '', imposto: '', mes: new Date().getMonth() + 1, ano: new Date().getFullYear() });
+    if (!apuracaoForm.faturamento) { toast('Informe o faturamento.', 'error'); return; }
+    
+    addApuracao({
+      companyId: company.id,
+      companyName: company.name,
+      faturamento: parseFloat(apuracaoForm.faturamento.replace(/\./g, '').replace(',', '.')),
+      imposto: parseFloat(apuracaoForm.imposto.replace(/\./g, '').replace(',', '.')),
+      mes: apuracaoForm.mes,
+      ano: apuracaoForm.ano
+    });
+
+    setApuracaoForm({ faturamento: '', imposto: '', mes: new Date().getMonth() + 1, ano: new Date().getFullYear() });
     toast('Apuração confirmada!', 'success');
   };
 
   const defaultList = (activeTab === 'fiscal') ? (DEFAULT_FISCAL[regime] || []) : (activeTab === 'labor' ? DEFAULT_LABOR : []);
-  const allObs = [...defaultList, ...(customObs[activeTab] || [])];
-
+  const tabCustomObs = companyCustomObs.filter(ob => ob.type === activeTab);
+  const allObs = [...defaultList, ...tabCustomObs];
   const today = new Date();
 
   const handleAddObligation = (e) => {
     e.preventDefault();
     if (!addForm.name || !addForm.day) { toast('Preencha nome e dia.', 'error'); return; }
-    const newOb = { name: addForm.name, day: Number(addForm.day), month: Number(addForm.month), type: activeTab, recurring: addForm.month === '0' };
-    setCustomObs(prev => ({ ...prev, [activeTab]: [...prev[activeTab], newOb] }));
+    
+    addObligation({
+      companyId: company.id,
+      name: addForm.name,
+      day: Number(addForm.day),
+      month: Number(addForm.month),
+      type: activeTab
+    });
+
     setAddForm({ name: '', day: '', month: '0' });
     setShowAddForm(false);
     toast('Obrigação adicionada!', 'success');
-  };
-
-  const removeCustom = (index) => {
-    setCustomObs(prev => ({ ...prev, [activeTab]: prev[activeTab].filter((_, i) => i !== index) }));
   };
 
   const getStatus = (ob) => {
@@ -224,7 +235,7 @@ const ObligationsPanel = ({ company, onClose }) => {
                 <ul className={styles.obList}>
                   {allObs.map((ob, i) => {
                     const status = getStatus(ob);
-                    const isCustom = i >= defaultList.length;
+                    const isCustom = !!ob.id;
                     return (
                       <li key={i} className={styles.obItem}>
                         <div className={`${styles.obStatus} ${styles['obStatus_' + status]}`}>
@@ -236,10 +247,9 @@ const ObligationsPanel = ({ company, onClose }) => {
                           <span className={styles.obName}>{ob.name}</span>
                           <span className={styles.obDate}>
                             Dia {ob.day}{ob.month > 0 ? ` de ${MONTH_NAMES[ob.month]}` : ' (mensal)'}
-                            {!ob.recurring && ' – anual'}
                           </span>
                         </div>
-                        {isCustom && <button className={styles.removeObBtn} onClick={() => removeCustom(i - defaultList.length)}><X size={13} /></button>}
+                        {isCustom && <button className={styles.removeObBtn} onClick={() => deleteObligation(ob.id)}><X size={13} /></button>}
                       </li>
                     );
                   })}
@@ -260,30 +270,30 @@ const ObligationsPanel = ({ company, onClose }) => {
                 <div className={styles.apuracaoRow}>
                   <div className={styles.addObField}>
                     <label>Mês de referência</label>
-                    <select className={styles.obInput} value={apuracao.mes} onChange={e => setApuracao(p => ({...p, mes: Number(e.target.value)}))}>
+                    <select className={styles.obInput} value={apuracaoForm.mes} onChange={e => setApuracaoForm(p => ({...p, mes: Number(e.target.value)}))}>
                       {MONTH_NAMES.slice(1).map((m, i) => <option key={i+1} value={i+1}>{m}</option>)}
                     </select>
                   </div>
                   <div className={styles.addObField}>
                     <label>Ano</label>
-                    <input className={styles.obInput} type="number" value={apuracao.ano} onChange={e => setApuracao(p => ({...p, ano: e.target.value}))} />
+                    <input className={styles.obInput} type="number" value={apuracaoForm.ano} onChange={e => setApuracaoForm(p => ({...p, ano: e.target.value}))} />
                   </div>
                 </div>
 
                 <div className={styles.addObField}>
                   <label>Faturamento Bruto (R$)</label>
-                  <input className={styles.obInput} type="text" placeholder="0,00" value={apuracao.faturamento} onChange={handleFaturamentoChange} />
+                  <input className={styles.obInput} type="text" placeholder="0,00" value={apuracaoForm.faturamento} onChange={handleFaturamentoChange} />
                 </div>
 
                 <div className={styles.apuracaoCalc}>
                   <span>Imposto estimado ({taxRate}%)</span>
-                  <strong className={styles.apuracaoValue}>R$ {apuracao.imposto || '0,00'}</strong>
+                  <strong className={styles.apuracaoValue}>R$ {apuracaoForm.imposto || '0,00'}</strong>
                 </div>
 
                 <div className={styles.addObField}>
-                  <label>Valor do imposto pago (R$) — ajuste manual se necessário</label>
-                  <input className={styles.obInput} type="text" placeholder="0,00" value={apuracao.imposto}
-                    onChange={e => setApuracao(p => ({...p, imposto: e.target.value}))} />
+                  <label>Valor do imposto pago (R$)</label>
+                  <input className={styles.obInput} type="text" placeholder="0,00" value={apuracaoForm.imposto}
+                    onChange={e => setApuracaoForm(p => ({...p, imposto: e.target.value}))} />
                 </div>
 
                 <button className={styles.confirmarBtn} onClick={confirmarApuracao}>
@@ -291,16 +301,16 @@ const ObligationsPanel = ({ company, onClose }) => {
                 </button>
               </div>
 
-              {historico.length > 0 && (
+              {companyApurations.length > 0 && (
                 <div className={styles.historicoSection}>
-                  <h4 className={styles.obListTitle}>Histórico de Apurações</h4>
+                  <h4 className={styles.obListTitle}>Histórico</h4>
                   <ul className={styles.obList}>
-                    {historico.map((h, i) => (
+                    {companyApurations.map((h, i) => (
                       <li key={i} className={styles.obItem}>
                         <div className={styles.obStatus} style={{background:'rgba(16,185,129,0.15)',color:'#10b981'}}><CheckCircle size={13} /></div>
                         <div className={styles.obInfo}>
-                          <span className={styles.obName}>{h.mesNome} / {h.ano}</span>
-                          <span className={styles.obDate}>Fat: R$ {h.faturamento} · Imposto: R$ {h.imposto} · Confirmado em {h.confirmedAt}</span>
+                          <span className={styles.obName}>{MONTH_NAMES[h.mes]} / {h.ano}</span>
+                          <span className={styles.obDate}>Fat: R$ {h.faturamento.toLocaleString('pt-BR')} · Imp: R$ {h.imposto.toLocaleString('pt-BR')}</span>
                         </div>
                       </li>
                     ))}
@@ -314,6 +324,7 @@ const ObligationsPanel = ({ company, onClose }) => {
     </div>
   );
 };
+
 
 
 // ─── Componente principal ─────────────────────────────────────────────────────
