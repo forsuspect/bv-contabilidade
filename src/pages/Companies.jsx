@@ -4,11 +4,8 @@ import {
   Plus, 
   Search, 
   Filter, 
-  MoreVertical, 
   Edit, 
   Trash2, 
-  ExternalLink,
-  Calculator,
   ChevronDown,
   FileText,
   X

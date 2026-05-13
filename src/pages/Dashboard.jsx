@@ -6,11 +6,7 @@ import {
   Clock, 
   FileText,
   ArrowUpRight,
-  ArrowDownRight,
-  User,
-  History,
-  Briefcase,
-  DollarSign
+  ArrowDownRight
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { 
@@ -20,10 +16,7 @@ import {
   YAxis, 
   CartesianGrid, 
   Tooltip, 
-  ResponsiveContainer,
-  BarChart,
-  Bar,
-  Cell
+  ResponsiveContainer
 } from 'recharts';
 import styles from './Dashboard.module.css';
 
@@ -68,14 +61,6 @@ const Dashboard = () => {
     { name: 'Mai', value: 1890 },
     { name: 'Jun', value: 2390 },
   ];
-
-  const taxData = [
-    { name: 'Simples', value: 45 },
-    { name: 'Presumido', value: 30 },
-    { name: 'Real', value: 25 },
-  ];
-
-  const COLORS = ['#3b82f6', '#10b981', '#f59e0b'];
 
   const handleExport = () => {
     const data = stats.map(s => `${s.label}: ${s.value}`).join('\n');
