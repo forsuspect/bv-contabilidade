@@ -6,8 +6,11 @@ import {
   Clock, 
   FileText,
   ArrowUpRight,
-  ArrowDownRight
+  ArrowDownRight,
+  Briefcase,
+  DollarSign
 } from 'lucide-react';
+
 import { useAuth } from '../context/AuthContext';
 import { 
   AreaChart, 
