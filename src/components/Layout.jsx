@@ -30,7 +30,7 @@ const Layout = () => {
         <div className={styles.content}>
           <Outlet />
           <footer className={styles.footer}>
-            <p>Desenvolvido por <a href="https://automize-xi.vercel.app/index.html#solucoes" target="_blank" rel="noopener noreferrer">Automize</a></p>
+            <p>Desenvolvido por <a href="https://automize-xi.vercel.app/index.html" target="_blank" rel="noopener noreferrer">Automize</a></p>
           </footer>
         </div>
       </div>

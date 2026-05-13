@@ -131,7 +131,7 @@ const Login = () => {
 
           <p className={styles.footerText}>
             &copy; 2026 BV Contabilidade. Todos os direitos reservados.<br />
-            Desenvolvido por <a href="https://automize-xi.vercel.app/index.html#solucoes" target="_blank" rel="noopener noreferrer" className={styles.agencyLink}>Automize</a>
+            Desenvolvido por <a href="https://automize-xi.vercel.app/index.html" target="_blank" rel="noopener noreferrer" className={styles.agencyLink}>Automize</a>
           </p>
         </motion.div>
       </div>
