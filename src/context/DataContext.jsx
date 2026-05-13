@@ -153,10 +153,17 @@ export const DataProvider = ({ children }) => {
   // Apurações
   const addApuracao = async (ap) => {
     if (!currentUserId) return;
-    const { error } = await supabase.from('fiscal_apurations').insert([{ ...toSnakeCase(ap), user_id: currentUserId }]);
-    if (error) toast('Erro ao salvar apuração', 'error');
-    else {
-      await logActivity('FISCAL', `Nova apuração confirmada para ${ap.companyName || 'empresa'}.`);
+    const { companyName, ...rest } = ap;
+    const { error } = await supabase.from('fiscal_apurations').insert([{ 
+      ...toSnakeCase(rest), 
+      user_id: currentUserId 
+    }]);
+    
+    if (error) {
+      console.error('Erro Supabase:', error);
+      toast('Erro ao salvar apuração: ' + error.message, 'error');
+    } else {
+      await logActivity('FISCAL', `Nova apuração confirmada para ${companyName || 'empresa'}.`);
       fetchData();
     }
   };
