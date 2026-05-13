@@ -105,7 +105,7 @@ const ObligationsPanel = ({ company, onClose }) => {
   const [activeTab, setActiveTab] = useState('fiscal');
   const regime = company.regime || 'SIMPLES_NACIONAL';
 
-  const [customObs, setCustomObs] = useState({ fiscal: [], labor: [] });
+  const [customObs, setCustomObs] = useState({ fiscal: [], labor: [], apuracao: [] });
   const [showAddForm, setShowAddForm] = useState(false);
   const [addForm, setAddForm] = useState({ name: '', day: '', month: '0' });
 
@@ -115,11 +115,6 @@ const ObligationsPanel = ({ company, onClose }) => {
 
   const TAX_RATES = { SIMPLES_NACIONAL: 6, LUCRO_PRESUMIDO: 11.33, LUCRO_REAL: 15 };
   const taxRate = TAX_RATES[regime] || 6;
-
-  const calcImposto = (fat) => {
-    const val = parseFloat(fat.replace(/\./g, '').replace(',', '.')) || 0;
-    return (val * taxRate / 100).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
-  };
 
   const handleFaturamentoChange = (e) => {
     const raw = e.target.value.replace(/\D/g, '');
@@ -140,8 +135,9 @@ const ObligationsPanel = ({ company, onClose }) => {
     toast('Apuração confirmada!', 'success');
   };
 
-  const defaultList = activeTab === 'fiscal' ? (DEFAULT_FISCAL[regime] || []) : DEFAULT_LABOR;
-  const allObs = [...defaultList, ...customObs[activeTab]];
+  const defaultList = (activeTab === 'fiscal') ? (DEFAULT_FISCAL[regime] || []) : (activeTab === 'labor' ? DEFAULT_LABOR : []);
+  const allObs = [...defaultList, ...(customObs[activeTab] || [])];
+
   const today = new Date();
 
   const handleAddObligation = (e) => {
