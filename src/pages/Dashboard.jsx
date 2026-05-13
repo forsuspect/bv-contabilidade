@@ -77,6 +77,16 @@ const Dashboard = () => {
 
   const COLORS = ['#3b82f6', '#10b981', '#f59e0b'];
 
+  const handleExport = () => {
+    const data = stats.map(s => `${s.label}: ${s.value}`).join('\n');
+    const blob = new Blob([data], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `resumo_dashboard_${new Date().toLocaleDateString('pt-BR')}.txt`;
+    link.click();
+  };
+
   return (
     <div className={styles.container}>
       <header className={styles.header}>
@@ -84,7 +94,7 @@ const Dashboard = () => {
           <h1 className={styles.title}>Dashboard</h1>
           <p className={styles.subtitle}>Bem-vindo de volta! Aqui está o resumo da sua contabilidade.</p>
         </div>
-        <button className={styles.exportBtn}>
+        <button className={styles.exportBtn} onClick={handleExport}>
           <FileText size={18} />
           Exportar Resumo
         </button>

@@ -93,6 +93,20 @@ const Companies = () => {
     }
   };
 
+  const handleCalculate = (company) => {
+    alert(`Iniciando cálculo de impostos para: ${company.name}\nRegime: ${getRegimeLabel(company.regime)}`);
+  };
+
+  const handleReport = (company) => {
+    const data = `Relatório de Empresa\n\nNome: ${company.name}\nCNPJ: ${company.cnpj}\nRegime: ${getRegimeLabel(company.regime)}\nStatus: ${company.status}`;
+    const blob = new Blob([data], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `relatorio_${company.name.toLowerCase().replace(/\s+/g, '_')}.txt`;
+    link.click();
+  };
+
   return (
     <div className={styles.container}>
       <header className={styles.header}>
@@ -170,11 +184,11 @@ const Companies = () => {
             </div>
 
             <div className={styles.cardFooter}>
-              <button className={styles.actionBtn}>
+              <button className={styles.actionBtn} onClick={() => handleCalculate(company)}>
                 <Calculator size={16} />
                 Calcular
               </button>
-              <button className={styles.secondaryBtn}>
+              <button className={styles.secondaryBtn} onClick={() => handleReport(company)}>
                 <FileText size={16} />
                 Relatório
               </button>

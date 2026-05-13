@@ -277,12 +277,18 @@
   
   .formSection {
     background-color: transparent;
+    padding: 1.5rem;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   
   .formContainer {
     background: white;
-    padding: 3rem 2rem;
+    padding: 2.5rem 2rem;
     border-radius: var(--radius-xl);
     box-shadow: var(--shadow-xl);
+    margin: auto;
   }
 }

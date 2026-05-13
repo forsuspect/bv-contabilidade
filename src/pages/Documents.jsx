@@ -20,6 +20,7 @@ const Documents = () => {
   const [selectedCompanyId, setSelectedCompanyId] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [showModal, setShowModal] = useState(false);
+  const [activeCategory, setActiveCategory] = useState('Todos os Arquivos');
   const [formData, setFormData] = useState({
     name: '',
     companyId: '',
@@ -70,8 +71,18 @@ const Documents = () => {
   const filteredDocs = documents.filter(doc => {
     const matchCompany = selectedCompanyId === '' || doc.companyId === selectedCompanyId;
     const matchSearch = (doc.name || '').toLowerCase().includes(searchTerm.toLowerCase());
-    return matchCompany && matchSearch;
+    const matchCategory = activeCategory === 'Todos os Arquivos' || doc.category === activeCategory;
+    return matchCompany && matchSearch && matchCategory;
   });
+
+  const handleView = (doc) => {
+    if (doc.fileData) {
+      const win = window.open();
+      win.document.write(`<iframe src="${doc.fileData}" frameborder="0" style="border:0; top:0px; left:0px; bottom:0px; right:0px; width:100%; height:100%;" allowfullscreen></iframe>`);
+    } else {
+      alert('Este é um documento de exemplo e não possui visualização real.');
+    }
+  };
 
   return (
     <div className={styles.container}>
@@ -117,23 +128,23 @@ const Documents = () => {
         <div className={styles.sidebar}>
           <h3 className={styles.sidebarTitle}>Categorias</h3>
           <ul className={styles.folderList}>
-            <li className={styles.activeFolder}>
+            <li className={activeCategory === 'Todos os Arquivos' ? styles.activeFolder : ''} onClick={() => setActiveCategory('Todos os Arquivos')}>
               <FolderOpen size={18} />
               <span>Todos os Arquivos</span>
             </li>
-            <li>
+            <li className={activeCategory === 'Contábil' ? styles.activeFolder : ''} onClick={() => setActiveCategory('Contábil')}>
               <FolderOpen size={18} />
               <span>Contábil</span>
             </li>
-            <li>
+            <li className={activeCategory === 'Fiscal & Tributário' ? styles.activeFolder : ''} onClick={() => setActiveCategory('Fiscal & Tributário')}>
               <FolderOpen size={18} />
               <span>Fiscal & Tributário</span>
             </li>
-            <li>
+            <li className={activeCategory === 'Departamento Pessoal' ? styles.activeFolder : ''} onClick={() => setActiveCategory('Departamento Pessoal')}>
               <FolderOpen size={18} />
               <span>Departamento Pessoal</span>
             </li>
-            <li>
+            <li className={activeCategory === 'Legalização' ? styles.activeFolder : ''} onClick={() => setActiveCategory('Legalização')}>
               <FolderOpen size={18} />
               <span>Legalização</span>
             </li>
@@ -175,7 +186,7 @@ const Documents = () => {
                           <td className={styles.fileMeta}>{doc.date}</td>
                           <td>
                             <div className={styles.actions}>
-                              <button className={styles.actionBtn} title="Visualizar">
+                              <button className={styles.actionBtn} title="Visualizar" onClick={() => handleView(doc)}>
                                 <Eye size={16} />
                               </button>
                               {doc.fileData && (
