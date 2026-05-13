@@ -1,15 +1,16 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { useAuth } from './AuthContext';
-import { useNotification } from './NotificationContext';
+import { toast } from '../utils/toast';
+
 
 
 const DataContext = createContext();
 
 export const DataProvider = ({ children }) => {
   const { user } = useAuth();
-  const { showNotification } = useNotification();
   const currentUserId = user?.id;
+
 
 
   const [companies, setCompanies] = useState([]);
@@ -141,7 +142,7 @@ export const DataProvider = ({ children }) => {
     
     if (error) {
       console.error('Erro ao adicionar empresa:', error);
-      showNotification('Erro ao cadastrar empresa: ' + error.message, 'error');
+      toast('Erro ao cadastrar empresa: ' + error.message, 'error');
     } else {
 
       await logActivity('COMPANY', `Empresa ${company.name} foi cadastrada.`);
@@ -181,7 +182,7 @@ export const DataProvider = ({ children }) => {
     const { error } = await supabase.from('users').delete().eq('id', id);
     if (error) {
       console.error('Erro ao excluir usuário:', error);
-      showNotification('Erro ao excluir usuário: ' + error.message, 'error');
+      toast('Erro ao excluir usuário: ' + error.message, 'error');
     } else {
 
       fetchData();
@@ -209,7 +210,7 @@ export const DataProvider = ({ children }) => {
     
     if (error) {
       console.error('Erro ao adicionar funcionário:', error);
-      showNotification('Erro ao cadastrar funcionário: ' + error.message, 'error');
+      toast('Erro ao cadastrar funcionário: ' + error.message, 'error');
     } else {
 
       await logActivity('HR', `Novo funcionário ${employee.name} cadastrado.`);
@@ -265,7 +266,7 @@ export const DataProvider = ({ children }) => {
           return;
         }
       }
-      showNotification('Erro ao enviar documento: ' + error.message, 'error');
+      toast('Erro ao enviar documento: ' + error.message, 'error');
     } else {
 
       await logActivity('DOC', `Documento ${document.name} foi enviado.`);
@@ -297,7 +298,7 @@ export const DataProvider = ({ children }) => {
     const { error } = await supabase.from('payrolls').insert([dataToSave]);
     if (error) {
       console.error('Erro ao adicionar folha:', error);
-      showNotification('Erro ao salvar folha de pagamento: ' + error.message, 'error');
+      toast('Erro ao salvar folha de pagamento: ' + error.message, 'error');
     } else {
       await logActivity('PAYROLL', `Folha de pagamento da empresa ${payroll.companyName} registrada.`);
       fetchData();
@@ -307,7 +308,7 @@ export const DataProvider = ({ children }) => {
   const updatePayrollStatus = async (id, newStatus) => {
     const { error } = await supabase.from('payrolls').update({ status: newStatus }).eq('id', id);
     if (!error) fetchData();
-    else showNotification('Erro ao atualizar status: ' + error.message, 'error');
+    else toast('Erro ao atualizar status: ' + error.message, 'error');
   }
 
 

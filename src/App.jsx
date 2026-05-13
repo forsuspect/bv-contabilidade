@@ -10,6 +10,7 @@ import Payroll from './pages/Payroll';
 import Profile from './pages/Profile';
 import Layout from './components/Layout';
 import LoadingScreen from './components/LoadingScreen';
+import SafeToast from './components/SafeToast';
 
 function App() {
   const { user, loading } = useAuth();
@@ -18,6 +19,7 @@ function App() {
 
   return (
     <Router>
+      <SafeToast />
       <Routes>
         <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />
         
@@ -36,3 +38,4 @@ function App() {
 }
 
 export default App;
+

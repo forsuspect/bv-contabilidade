@@ -1,13 +1,13 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
-import { useNotification } from './NotificationContext';
+import { toast } from '../utils/toast';
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  const { showNotification } = useNotification();
+
 
   useEffect(() => {
     const savedUser = localStorage.getItem('bv_user');
@@ -41,7 +41,8 @@ export const AuthProvider = ({ children }) => {
         setUser(data);
         return data;
       } else {
-        showNotification('Usuário ou senha incorretos!', 'error');
+        toast('Usuário ou senha incorretos!', 'error');
+
         return false;
       }
     } catch (err) {
@@ -71,7 +72,8 @@ export const AuthProvider = ({ children }) => {
         .eq('id', user.id);
 
       if (error) {
-        showNotification('Erro ao atualizar perfil: ' + error.message, 'error');
+        toast('Erro ao atualizar perfil: ' + error.message, 'error');
+
         throw error;
       }
 

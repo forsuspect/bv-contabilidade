@@ -1,14 +1,15 @@
 import React, { useState, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { useNotification } from '../context/NotificationContext';
+import { toast } from '../utils/toast';
+
 import { Camera, User, Mail, Lock, CheckCircle, Upload, LogOut } from 'lucide-react';
 
 import styles from './Profile.module.css';
 
 const Profile = () => {
   const { user, updateProfile, logout } = useAuth();
-  const { showNotification } = useNotification();
   const fileInputRef = useRef(null);
+
 
   
   const [formData, setFormData] = useState({
@@ -54,7 +55,8 @@ const Profile = () => {
       }
       
       updateProfile(updatedData);
-      showNotification('Perfil atualizado com sucesso!', 'success');
+      toast('Perfil atualizado com sucesso!', 'success');
+
       setFormData(prev => ({ ...prev, password: '' })); // Limpa campo de senha
     }
   };

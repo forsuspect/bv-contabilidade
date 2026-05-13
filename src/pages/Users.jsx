@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
-import { useNotification } from '../context/NotificationContext';
+import { toast } from '../utils/toast';
+
 import { 
   UserPlus, 
   Search, 
@@ -18,8 +19,8 @@ import styles from './Users.module.css';
 const UsersPage = () => {
   const { appUsers, deleteUser, updateUser, addUser } = useData();
   const { user: currentUser } = useAuth();
-  const { showNotification } = useNotification();
   const [searchTerm, setSearchTerm] = useState('');
+
 
   
   // Modal States
@@ -103,7 +104,7 @@ const UsersPage = () => {
       if(addUser) {
         addUser({ ...formData, status: 'ACTIVE' });
       } else {
-        showNotification("Função de criar usuário requer backend.", "info");
+        toast("Função de criar usuário requer backend.", "info");
       }
 
     }
