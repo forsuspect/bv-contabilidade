@@ -2,7 +2,7 @@ import React from 'react';
 import { useData as useAppData } from '../context/DataContext';
 import { 
   Building2, 
-  Calculator, 
+  History, 
   Clock, 
   FileText,
   ArrowUpRight,
@@ -43,15 +43,15 @@ const Dashboard = () => {
       color: '#3b82f6'
     },
     { 
-      label: 'Pendências Fiscais', 
-      value: companies.filter(c => c.status === 'PENDING').length, 
+      label: 'Atividades Recentes', 
+      value: activities.length, 
       icon: <Clock />, 
-      change: '-2', 
+      change: 'Novo', 
       isPositive: true,
       color: '#f59e0b'
     },
     { 
-      label: 'Relatórios Emitidos', 
+      label: 'Documentos na Nuvem', 
       value: documents.length.toString(), 
       icon: <FileText />, 
       change: '0%', 
@@ -118,10 +118,10 @@ const Dashboard = () => {
         ))}
       </div>
 
-      <div className={styles.chartsGrid}>
+      <div className={styles.chartsGrid} style={{ gridTemplateColumns: '1fr' }}>
         <div className={styles.chartCard}>
           <div className={styles.chartHeader}>
-            <h3 className={styles.chartTitle}>Faturamento Processado</h3>
+            <h3 className={styles.chartTitle}>Volume de Dados Processados</h3>
             <p className={styles.chartSubtitle}>Últimos 6 meses</p>
           </div>
           <div className={styles.chartBody}>
@@ -141,31 +141,6 @@ const Dashboard = () => {
                 />
                 <Area type="monotone" dataKey="value" stroke="#3b82f6" strokeWidth={3} fillOpacity={1} fill="url(#colorValue)" />
               </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        <div className={styles.chartCard}>
-          <div className={styles.chartHeader}>
-            <h3 className={styles.chartTitle}>Distribuição por Regime</h3>
-            <p className={styles.chartSubtitle}>Porcentagem de empresas</p>
-          </div>
-          <div className={styles.chartBody}>
-            <ResponsiveContainer width="100%" height={300}>
-              <BarChart data={taxData}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} />
-                <YAxis axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} />
-                <Tooltip 
-                  cursor={{fill: 'transparent'}}
-                  contentStyle={{ backgroundColor: '#fff', borderRadius: '8px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
-                />
-                <Bar dataKey="value" radius={[4, 4, 0, 0]}>
-                  {taxData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Bar>
-              </BarChart>
             </ResponsiveContainer>
           </div>
         </div>

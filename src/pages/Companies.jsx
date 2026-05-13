@@ -93,10 +93,6 @@ const Companies = () => {
     }
   };
 
-  const handleCalculate = (company) => {
-    alert(`Iniciando cálculo de impostos para: ${company.name}\nRegime: ${getRegimeLabel(company.regime)}`);
-  };
-
   const handleReport = (company) => {
     const data = `Relatório de Empresa\n\nNome: ${company.name}\nCNPJ: ${company.cnpj}\nRegime: ${getRegimeLabel(company.regime)}\nStatus: ${company.status}`;
     const blob = new Blob([data], { type: 'text/plain' });
@@ -184,13 +180,9 @@ const Companies = () => {
             </div>
 
             <div className={styles.cardFooter}>
-              <button className={styles.actionBtn} onClick={() => handleCalculate(company)}>
-                <Calculator size={16} />
-                Calcular
-              </button>
-              <button className={styles.secondaryBtn} onClick={() => handleReport(company)}>
+              <button className={styles.actionBtn} onClick={() => handleReport(company)}>
                 <FileText size={16} />
-                Relatório
+                Gerar Relatório
               </button>
             </div>
           </div>
