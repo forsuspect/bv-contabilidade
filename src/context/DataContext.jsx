@@ -1,6 +1,5 @@
-import React, { createContext, useContext, useEffect } from 'react';
-import { db } from '../db';
-import { useLiveQuery } from 'dexie-react-hooks';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { supabase } from '../lib/supabaseClient';
 import { useAuth } from './AuthContext';
 
 const DataContext = createContext();
@@ -9,117 +8,180 @@ export const DataProvider = ({ children }) => {
   const { user } = useAuth();
   const currentUserId = user?.id;
 
-  // Filtra os dados com base no usuário logado
-  const companies = useLiveQuery(() => 
-    currentUserId ? db.companies.where('userId').equals(currentUserId).toArray() : []
-  , [currentUserId]) || [];
+  const [companies, setCompanies] = useState([]);
+  const [appUsers, setAppUsers] = useState([]);
+  const [employees, setEmployees] = useState([]);
+  const [documents, setDocuments] = useState([]);
+  const [payrolls, setPayrolls] = useState([]);
+  const [activities, setActivities] = useState([]);
 
-  const appUsers = useLiveQuery(() => db.users.toArray()) || [];
+  // Função para carregar todos os dados
+  const fetchData = async () => {
+    if (!currentUserId) return;
 
-  const employees = useLiveQuery(() => 
-    currentUserId ? db.employees.where('userId').equals(currentUserId).toArray() : []
-  , [currentUserId]) || [];
+    try {
+      // Buscar Empresas
+      const { data: companiesData } = await supabase
+        .from('companies')
+        .select('*')
+        .eq('user_id', currentUserId);
+      setCompanies(companiesData || []);
 
-  const documents = useLiveQuery(() => 
-    currentUserId ? db.documents.where('userId').equals(currentUserId).toArray() : []
-  , [currentUserId]) || [];
+      // Buscar Usuários (para o admin)
+      const { data: usersData } = await supabase
+        .from('users')
+        .select('*');
+      setAppUsers(usersData || []);
 
-  const payrolls = useLiveQuery(() => 
-    currentUserId ? db.payroll.where('userId').equals(currentUserId).toArray() : []
-  , [currentUserId]) || [];
+      // Buscar Funcionários
+      const { data: employeesData } = await supabase
+        .from('employees')
+        .select('*')
+        .eq('user_id', currentUserId);
+      setEmployees(employeesData || []);
 
-  const activities = useLiveQuery(() => 
-    currentUserId ? db.activities.where('userId').equals(currentUserId).orderBy('timestamp').reverse().limit(10).toArray() : []
-  , [currentUserId]) || [];
+      // Buscar Documentos
+      const { data: docsData } = await supabase
+        .from('documents')
+        .select('*')
+        .eq('user_id', currentUserId);
+      setDocuments(docsData || []);
+
+      // Buscar Atividades
+      const { data: actsData } = await supabase
+        .from('activities')
+        .select('*')
+        .eq('user_id', currentUserId)
+        .order('timestamp', { ascending: false })
+        .limit(10);
+      setActivities(actsData || []);
+      
+    } catch (err) {
+      console.error('Erro ao carregar dados do Supabase:', err);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+    
+    // Configurar Realtime (Opcional, mas recomendado para SaaS)
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on('postgres_changes', { event: '*', schema: 'public' }, () => {
+        fetchData();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [currentUserId]);
 
   const logActivity = async (type, description) => {
     if (!currentUserId) return;
-    await db.activities.add({
+    await supabase.from('activities').insert([{
       type,
       description,
-      timestamp: new Date().toISOString(),
-      userId: currentUserId
-    });
+      user_id: currentUserId,
+      timestamp: new Date().toISOString()
+    }]);
   };
 
   const addCompany = async (company) => {
     if (!currentUserId) return;
-    const newCompany = { 
-      ...company, 
-      id: Date.now().toString(), 
-      lastUpdate: new Date().toISOString(),
-      userId: currentUserId 
-    };
-    await db.companies.add(newCompany);
-    await logActivity('COMPANY', `Empresa ${company.name} foi cadastrada.`);
+    const { error } = await supabase.from('companies').insert([{
+      ...company,
+      user_id: currentUserId
+    }]);
+    
+    if (!error) {
+      await logActivity('COMPANY', `Empresa ${company.name} foi cadastrada.`);
+      fetchData();
+    }
   }
 
   const updateCompany = async (company) => {
-    await db.companies.update(company.id, { ...company, lastUpdate: new Date().toISOString() });
-    await logActivity('COMPANY', `Dados da empresa ${company.name} foram atualizados.`);
+    const { error } = await supabase.from('companies').update(company).eq('id', company.id);
+    if (!error) {
+      await logActivity('COMPANY', `Dados da empresa ${company.name} foram atualizados.`);
+      fetchData();
+    }
   }
 
   const deleteCompany = async (id) => {
-    const company = await db.companies.get(id);
-    await db.companies.delete(id);
-    if (company) await logActivity('COMPANY', `Empresa ${company.name} foi removida.`);
+    const { data: company } = await supabase.from('companies').select('name').eq('id', id).single();
+    const { error } = await supabase.from('companies').delete().eq('id', id);
+    if (!error) {
+      if (company) await logActivity('COMPANY', `Empresa ${company.name} foi removida.`);
+      fetchData();
+    }
   };
 
-  const addUser = async (user) => {
-    const newUser = { ...user, id: Date.now().toString() };
-    await db.users.add(newUser);
+  const addUser = async (userData) => {
+    const { error } = await supabase.from('users').insert([userData]);
+    if (!error) fetchData();
   }
 
   const updateUser = async (updatedUser) => {
-    await db.users.put(updatedUser);
+    const { error } = await supabase.from('users').update(updatedUser).eq('id', updatedUser.id);
+    if (!error) fetchData();
   }
 
   const deleteUser = async (id) => {
-    await db.users.delete(id);
+    const { error } = await supabase.from('users').delete().eq('id', id);
+    if (!error) fetchData();
   }
 
   const addEmployee = async (employee) => {
     if (!currentUserId) return;
-    const newEmployee = { ...employee, id: Date.now().toString(), userId: currentUserId };
-    await db.employees.add(newEmployee);
-    await logActivity('HR', `Novo funcionário ${employee.name} cadastrado.`);
+    const { error } = await supabase.from('employees').insert([{
+      ...employee,
+      user_id: currentUserId
+    }]);
+    
+    if (!error) {
+      await logActivity('HR', `Novo funcionário ${employee.name} cadastrado.`);
+      fetchData();
+    }
   }
 
   const updateEmployee = async (employee) => {
-    await db.employees.put(employee);
-    await logActivity('HR', `Dados do funcionário ${employee.name} atualizados.`);
+    const { error } = await supabase.from('employees').update(employee).eq('id', employee.id);
+    if (!error) {
+      await logActivity('HR', `Dados do funcionário ${employee.name} atualizados.`);
+      fetchData();
+    }
   }
 
   const deleteEmployee = async (id) => {
-    const emp = await db.employees.get(id);
-    await db.employees.delete(id);
-    if (emp) await logActivity('HR', `Funcionário ${emp.name} removido.`);
+    const { data: emp } = await supabase.from('employees').select('name').eq('id', id).single();
+    const { error } = await supabase.from('employees').delete().eq('id', id);
+    if (!error) {
+      if (emp) await logActivity('HR', `Funcionário ${emp.name} removido.`);
+      fetchData();
+    }
   }
 
   const addDocument = async (document) => {
     if (!currentUserId) return;
-    const newDoc = { ...document, id: Date.now().toString(), uploadDate: new Date().toISOString(), userId: currentUserId };
-    await db.documents.add(newDoc);
-    await logActivity('DOC', `Documento ${document.name} foi enviado.`);
+    const { error } = await supabase.from('documents').insert([{
+      ...document,
+      user_id: currentUserId
+    }]);
+    
+    if (!error) {
+      await logActivity('DOC', `Documento ${document.name} foi enviado.`);
+      fetchData();
+    }
   }
 
   const deleteDocument = async (id) => {
-    const doc = await db.documents.get(id);
-    await db.documents.delete(id);
-    if (doc) await logActivity('DOC', `Documento ${doc.name} foi removido.`);
-  }
-
-  const addPayroll = async (payroll) => {
-    if (!currentUserId) return;
-    const newPayroll = { ...payroll, id: Date.now().toString(), userId: currentUserId };
-    await db.payroll.add(newPayroll);
-    await logActivity('PAYROLL', `Folha de pagamento da ${payroll.companyName} registrada.`);
-  }
-
-  const updatePayrollStatus = async (id, status) => {
-    const p = await db.payroll.get(id);
-    await db.payroll.update(id, { status });
-    if (p) await logActivity('PAYROLL', `Status da folha ${p.companyName} alterado para ${status}.`);
+    const { data: doc } = await supabase.from('documents').select('name').eq('id', id).single();
+    const { error } = await supabase.from('documents').delete().eq('id', id);
+    if (!error) {
+      if (doc) await logActivity('DOC', `Documento ${doc.name} foi removido.`);
+      fetchData();
+    }
   }
 
   return (
@@ -128,8 +190,7 @@ export const DataProvider = ({ children }) => {
       appUsers, addUser, updateUser, deleteUser,
       employees, addEmployee, updateEmployee, deleteEmployee,
       documents, addDocument, deleteDocument,
-      payrolls, addPayroll, updatePayrollStatus,
-      activities
+      payrolls, activities
     }}>
       {children}
     </DataContext.Provider>

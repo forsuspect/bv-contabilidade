@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { db } from '../db';
+import { supabase } from '../lib/supabaseClient';
 
 const AuthContext = createContext();
 
@@ -15,33 +15,35 @@ export const AuthProvider = ({ children }) => {
     setLoading(false);
   }, []);
 
-  const login = (username, password) => {
-    return new Promise(async (resolve, reject) => {
-      try {
-        console.log('Tentativa de login:', username);
-        const cleanUsername = username.trim().toLowerCase();
-        const cleanPassword = password.trim();
-        
-        // Busca direta no banco por username (case-insensitive)
-        const foundUser = await db.users.where('username').equalsIgnoreCase(cleanUsername).first();
-        
-        console.log('Usuário encontrado no banco:', foundUser ? 'Sim' : 'Não');
+  const login = async (username, password) => {
+    try {
+      const cleanUsername = username.trim().toLowerCase();
+      const cleanPassword = password.trim();
 
-        if (foundUser && foundUser.password === cleanPassword) {
-          if (foundUser.status === 'INACTIVE') {
-            reject(new Error('Acesso Bloqueado: Este usuário está inativo. Por favor, entre em contato com os proprietários ou com o suporte técnico para reativar sua conta.'));
-            return;
-          }
-          localStorage.setItem('bv_user', JSON.stringify(foundUser));
-          setUser(foundUser);
-          resolve(foundUser);
-        } else {
-          reject(new Error('Atenção: Usuário ou senha incorretos. Caso precise de um novo acesso ou tenha esquecido suas credenciais, entre em contato com os proprietários da plataforma ou com os desenvolvedores.'));
-        }
-      } catch (error) {
-        reject(new Error('Erro ao conectar com o banco de dados'));
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .ilike('username', cleanUsername)
+        .single();
+
+      if (error || !data) {
+        throw new Error('Atenção: Usuário ou senha incorretos. Caso precise de um novo acesso ou tenha esquecido suas credenciais, entre em contato com os proprietários da plataforma ou com os desenvolvedores.');
       }
-    });
+
+      if (data.password === cleanPassword) {
+        if (data.status === 'INACTIVE') {
+          throw new Error('Acesso Bloqueado: Este usuário está inativo. Por favor, entre em contato com os proprietários ou com o suporte técnico para reativar sua conta.');
+        }
+
+        localStorage.setItem('bv_user', JSON.stringify(data));
+        setUser(data);
+        return data;
+      } else {
+        throw new Error('Atenção: Usuário ou senha incorretos.');
+      }
+    } catch (err) {
+      throw err;
+    }
   };
 
   const logout = () => {
@@ -52,13 +54,15 @@ export const AuthProvider = ({ children }) => {
   const updateProfile = async (updatedData) => {
     const newData = { ...user, ...updatedData };
     
-    // Atualiza no banco de dados Dexie se não for um usuário simulado
-    if (newData.id && newData.id !== '1' && newData.id !== '2') {
-      try {
-        await db.users.put(newData);
-      } catch (err) {
-        console.error('Erro ao salvar no banco:', err);
-      }
+    try {
+      const { error } = await supabase
+        .from('users')
+        .update(updatedData)
+        .eq('id', user.id);
+      
+      if (error) throw error;
+    } catch (err) {
+      console.error('Erro ao salvar no banco:', err);
     }
 
     setUser(newData);
