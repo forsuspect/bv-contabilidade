@@ -19,12 +19,15 @@ export const AuthProvider = ({ children }) => {
     return new Promise(async (resolve, reject) => {
       try {
         console.log('Tentativa de login:', username);
-        // Busca direta no banco por username
-        const foundUser = await db.users.where('username').equals(username).first();
+        const cleanUsername = username.trim().toLowerCase();
+        const cleanPassword = password.trim();
+        
+        // Busca direta no banco por username (case-insensitive)
+        const foundUser = await db.users.where('username').equalsIgnoreCase(cleanUsername).first();
         
         console.log('Usuário encontrado no banco:', foundUser ? 'Sim' : 'Não');
 
-        if (foundUser && foundUser.password === password) {
+        if (foundUser && foundUser.password === cleanPassword) {
           if (foundUser.status === 'INACTIVE') {
             reject(new Error('Acesso Bloqueado: Este usuário está inativo. Por favor, entre em contato com os proprietários ou com o suporte técnico para reativar sua conta.'));
             return;
