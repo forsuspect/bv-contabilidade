@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Eye, EyeOff, Lock, User, Loader2, ArrowRight, CheckCircle2, AlertTriangle } from 'lucide-react';
+import { Eye, EyeOff, Lock, User, Loader2, ArrowRight, CheckCircle2, AlertTriangle, X } from 'lucide-react';
 import { motion } from 'framer-motion';
 import styles from './Login.module.css';
 
