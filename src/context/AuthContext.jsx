@@ -26,14 +26,14 @@ export const AuthProvider = ({ children }) => {
 
         if (foundUser && foundUser.password === password) {
           if (foundUser.status === 'INACTIVE') {
-            reject(new Error('Usuário inativo. Contate o administrador.'));
+            reject(new Error('Usuário inativo. Contate os donos ou desenvolvedores do projeto.'));
             return;
           }
           localStorage.setItem('bv_user', JSON.stringify(foundUser));
           setUser(foundUser);
           resolve(foundUser);
         } else {
-          reject(new Error('Usuário ou senha inválidos'));
+          reject(new Error('Usuário ou senha errada. Entre em contato com os donos ou desenvolvedores do projeto.'));
         }
       } catch (error) {
         reject(new Error('Erro ao conectar com o banco de dados'));

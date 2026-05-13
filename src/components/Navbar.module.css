@@ -65,25 +65,155 @@
   gap: 1.5rem;
 }
 
+.notificationWrapper {
+  position: relative;
+}
+
 .notificationBtn {
   position: relative;
   color: var(--text-muted);
-  transition: color 0.2s;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  border-radius: 50%;
 }
 
-.notificationBtn:hover {
+.notificationBtn:hover, .notificationBtn.active {
   color: var(--primary);
+  background-color: var(--background);
 }
 
 .badge {
   position: absolute;
-  top: -2px;
-  right: -2px;
-  width: 8px;
-  height: 8px;
+  top: 6px;
+  right: 6px;
   background-color: var(--danger);
+  color: white;
+  font-size: 0.65rem;
+  font-weight: 700;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border: 2px solid var(--surface);
-  border-radius: 50%;
+}
+
+.notificationOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+}
+
+.notificationDropdown {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  width: 320px;
+  background: white;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-xl);
+  border: 1px solid var(--border);
+  z-index: 101;
+  overflow: hidden;
+  animation: slideDown 0.2s ease-out;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.dropdownHeader {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #f8fafc;
+}
+
+.dropdownHeader h3 {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.dropdownHeader button {
+  color: var(--text-muted);
+  padding: 4px;
+  border-radius: 4px;
+}
+
+.dropdownHeader button:hover {
+  background-color: #edf2f7;
+}
+
+.dropdownBody {
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.notificationItem {
+  padding: 1rem;
+  display: flex;
+  gap: 0.75rem;
+  border-bottom: 1px solid var(--border);
+  transition: background-color 0.2s;
+  cursor: pointer;
+}
+
+.notificationItem:hover {
+  background-color: #f8fafc;
+}
+
+.notifIcon {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.notifContent {
+  flex: 1;
+}
+
+.notifText {
+  font-size: 0.8125rem;
+  color: var(--text-main);
+  line-height: 1.4;
+  margin-bottom: 4px;
+}
+
+.notifTime {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.dropdownFooter {
+  padding: 0.75rem;
+  text-align: center;
+  border-top: 1px solid var(--border);
+  background-color: #f8fafc;
+}
+
+.dropdownFooter a {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.dropdownFooter a:hover {
+  text-decoration: underline;
+}
+
+.emptyText {
+  padding: 2rem 1rem;
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--text-muted);
 }
 
 .profile {
