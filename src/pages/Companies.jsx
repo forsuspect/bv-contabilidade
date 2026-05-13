@@ -332,6 +332,91 @@ const ObligationsPanel = ({ company, onClose }) => {
 };
 
 
+// Função para gerar Relatório PDF Moderno
+const generateCompanyReport = (company, obligations, apurations) => {
+  const doc = new jsPDF();
+  const pageWidth = doc.internal.pageSize.getWidth();
+
+  // Cabeçalho Estilizado
+  doc.setFillColor(15, 23, 42); // Navy Dark
+  doc.rect(0, 0, pageWidth, 45, 'F');
+  
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(24);
+  doc.setFont('helvetica', 'bold');
+  doc.text('BV CONTABILIDADE', 15, 22);
+  
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'normal');
+  doc.text('Relatório Consolidado de Gestão Contábil', 15, 32);
+  doc.text(new Date().toLocaleDateString('pt-BR'), pageWidth - 15, 22, { align: 'right' });
+
+  // Dados da Empresa
+  doc.setTextColor(15, 23, 42);
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'bold');
+  doc.text('DADOS DA EMPRESA', 15, 60);
+  
+  doc.setDrawColor(226, 232, 240);
+  doc.line(15, 63, pageWidth - 15, 63);
+
+  doc.setFontSize(10);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Razão Social:', 15, 73);
+  doc.text('CNPJ:', 15, 80);
+  doc.text('Regime Tributário:', 15, 87);
+  
+  doc.setFont('helvetica', 'normal');
+  doc.text(company.name || '---', 45, 73);
+  doc.text(company.cnpj || '---', 45, 80);
+  doc.text(company.regime?.replace(/_/g, ' ') || 'Não informado', 45, 87);
+
+  // Histórico de Apurações
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'bold');
+  doc.text('HISTÓRICO DE APURAÇÕES FISCAIS', 15, 105);
+  
+  const apurRows = apurations.map(ap => [
+    `${MONTH_NAMES[ap.mes]} / ${ap.ano}`,
+    `R$ ${Number(ap.faturamento).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+    `R$ ${Number(ap.imposto).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
+    new Date(ap.confirmedAt || new Date()).toLocaleDateString('pt-BR')
+  ]);
+
+  doc.autoTable({
+    startY: 110,
+    head: [['Mês/Ano', 'Faturamento', 'Imposto', 'Confirmação']],
+    body: apurRows.length > 0 ? apurRows : [['-', 'Nenhuma apuração registrada', '-', '-']],
+    theme: 'grid',
+    headStyles: { fillColor: [15, 23, 42], textColor: 255 },
+    styles: { fontSize: 9 }
+  });
+
+  // Obrigações
+  const lastY = doc.lastAutoTable.finalY + 15;
+  doc.setFontSize(14);
+  doc.setFont('helvetica', 'bold');
+  doc.text('OBRIGAÇÕES E VENCIMENTOS', 15, lastY);
+
+  const obRows = obligations.map(ob => [
+    ob.name,
+    ob.type === 'fiscal' ? 'Fiscal' : 'Trabalhista',
+    `Dia ${ob.day}${ob.month > 0 ? ` de ${MONTH_NAMES[ob.month]}` : ' (Mensal)'}`
+  ]);
+
+  doc.autoTable({
+    startY: lastY + 5,
+    head: [['Obrigação', 'Tipo', 'Vencimento']],
+    body: obRows.length > 0 ? obRows : [['-', 'Sem obrigações customizadas', '-']],
+    theme: 'striped',
+    headStyles: { fillColor: [71, 85, 105], textColor: 255 }
+  });
+
+  doc.save(`Relatorio_${company.name.replace(/\s+/g, '_')}.pdf`);
+  toast('Relatório PDF gerado!', 'success');
+};
+
+
 
 // ─── Componente principal ─────────────────────────────────────────────────────
 const Companies = () => {
