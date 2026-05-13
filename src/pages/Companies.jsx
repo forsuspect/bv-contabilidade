@@ -4,11 +4,17 @@ import { toast } from '../utils/toast';
 import { 
   Plus, Search, Filter, Edit, Trash2, ChevronDown,
   FileText, X, Calendar, ChevronLeft, ChevronRight,
-  AlertTriangle, CheckCircle, Clock, Building2
+  AlertTriangle, CheckCircle, Clock, Building2,
+  Download, DollarSign
 } from 'lucide-react';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 import styles from './Companies.module.css';
 
-const MONTH_NAMES = ['','Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const MONTH_NAMES = [
+  "", "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+  "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+];
 
 // Obrigações padrão por regime
 const DEFAULT_FISCAL = {
@@ -329,61 +335,14 @@ const ObligationsPanel = ({ company, onClose }) => {
 
 // ─── Componente principal ─────────────────────────────────────────────────────
 const Companies = () => {
-  const { companies, deleteCompany, addCompany } = useData();
+  const { companies, deleteCompany, addCompany, obligations = [], apurations = [] } = useData();
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterRegime, setFilterRegime] = useState('ALL');
-  const [showModal, setShowModal] = useState(false);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [companyToDelete, setCompanyToDelete] = useState(null);
-  const [selectedCompany, setSelectedCompany] = useState(null);
-  const [formData, setFormData] = useState({ name: '', fantasyName: '', cnpj: '', regime: 'SIMPLES_NACIONAL' });
+  // ... resto do estado ...
   
-  const maskCNPJ = (v) =>
-    v.replace(/\D/g, '')
-      .replace(/^(\d{2})(\d)/, '$1.$2')
-      .replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3')
-      .replace(/\.(\d{3})(\d)/, '.$1/$2')
-      .replace(/(\d{4})(\d)/, '$1-$2')
-      .slice(0, 18);
-
-  const safeCompanies = Array.isArray(companies) ? companies : [];
-  const filteredCompanies = safeCompanies.filter(c => {
-    if (!c) return false;
-    const matchSearch = (c.name || '').toLowerCase().includes(searchTerm.toLowerCase()) || (c.cnpj || '').includes(searchTerm);
-    const matchRegime = filterRegime === 'ALL' || c.regime === filterRegime;
-    return matchSearch && matchRegime;
-  });
-
-  const getRegimeLabel = (r) => ({
-    SIMPLES_NACIONAL: 'Simples Nacional',
-    LUCRO_PRESUMIDO: 'Lucro Presumido',
-    LUCRO_REAL: 'Lucro Real',
-  }[r] || r || 'Não definido');
-
-  const handleSaveCompany = (e) => {
-    e.preventDefault();
-    if (formData.cnpj.length < 18) { toast('CNPJ inválido.', 'error'); return; }
-    addCompany({ ...formData, status: 'ACTIVE', estimatedTax: 0 });
-    toast('Empresa cadastrada!', 'success');
-    setShowModal(false);
-    setFormData({ name: '', fantasyName: '', cnpj: '', regime: 'SIMPLES_NACIONAL' });
-  };
-
-  const handleDelete = () => {
-    if (companyToDelete) {
-      deleteCompany(companyToDelete.id);
-      setShowDeleteModal(false);
-      setCompanyToDelete(null);
-      toast('Empresa removida.', 'info');
-    }
-  };
-
   const handleReport = (company) => {
-    const data = `Relatório\n\nNome: ${company.name}\nCNPJ: ${company.cnpj}\nRegime: ${getRegimeLabel(company.regime)}`;
-    const blob = new Blob([data], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = `relatorio_${(company.name||'empresa').replace(/\s+/g,'_')}.txt`; a.click();
+    const companyObs = obligations.filter(ob => ob.companyId === company.id);
+    const companyApur = apurations.filter(ap => ap.companyId === company.id);
+    generateCompanyReport(company, companyObs, companyApur);
   };
 
   return (

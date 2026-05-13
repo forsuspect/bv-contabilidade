@@ -8,7 +8,8 @@ import {
   ArrowUpRight,
   ArrowDownRight,
   Briefcase,
-  DollarSign
+  DollarSign,
+  CheckCircle
 } from 'lucide-react';
 
 import { useAuth } from '../context/AuthContext';
@@ -162,42 +163,7 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {isManagement && (
-            <div className={styles.recentActivity}>
-              <div className={styles.sectionHeader}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <History size={20} color="#3b82f6" />
-                  <h3 className={styles.sectionTitle}>Atividades Recentes</h3>
-                </div>
-              </div>
-              <div className={styles.activityList}>
-                {activities.length === 0 ? (
-                  <p className={styles.emptyActivity}>Nenhuma atividade registrada ainda.</p>
-                ) : (
-                  activities.map((activity) => {
-                    let Icon = FileText;
-                    let color = '#8b5cf6';
-                    if (activity.type === 'COMPANY') { Icon = Building2; color = '#3b82f6'; }
-                    if (activity.type === 'HR') { Icon = Briefcase; color = '#10b981'; }
-                    if (activity.type === 'PAYROLL') { Icon = DollarSign; color = '#f59e0b'; }
-                    if (activity.type === 'FISCAL') { Icon = CheckCircle; color = '#10b981'; }
-
-                    return (
-                      <div key={activity.id} className={styles.activityItem}>
-                        <div className={styles.activityAvatar} style={{ backgroundColor: `${color}15`, color: color }}>
-                          <Icon size={20} />
-                        </div>
-                        <div className={styles.activityInfo}>
-                          <p className={styles.activityText}>{activity.description}</p>
-                          <p className={styles.activityTime}>{new Date(activity.timestamp).toLocaleString('pt-BR')}</p>
-                        </div>
-                      </div>
-                    );
-                  })
-                )}
-              </div>
-            </div>
-          )}
+          {/* Espaço reservado para futuras expansões ou widgets menores */}
         </div>
 
         {/* Coluna da Direita: Gráfico */}
@@ -238,6 +204,5 @@ const Dashboard = () => {
   );
 };
 
-};
 
 export default Dashboard;
