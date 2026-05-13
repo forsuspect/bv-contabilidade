@@ -328,17 +328,15 @@
   
   .container {
     background-color: #f8fafc;
-    position: fixed;
+    position: absolute;
     inset: 0;
-    height: 100vh;
-    height: -webkit-fill-available;
-    height: 100dvh;
+    min-height: 100vh;
+    min-height: -webkit-fill-available;
     width: 100vw;
     overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
-    touch-action: none;
     padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
   }
   
@@ -361,8 +359,10 @@
     width: 100%;
     max-width: 380px;
     margin: 0;
-    /* Ajuste específico para iPhones modernos (X, 11, 12, 13, 14, 15) */
-    max-height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 2rem);
+    z-index: 100;
+    position: relative;
+    /* Ajuste flexível para o teclado mobile */
+    max-height: 90vh;
   }
 
   .logoText {

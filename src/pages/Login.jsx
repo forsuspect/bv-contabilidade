@@ -14,11 +14,10 @@ const Login = () => {
   const { login } = useAuth();
 
   useEffect(() => {
-    document.body.style.overflow = 'hidden';
-    document.body.style.height = '100%';
+    // Apenas garante que não haverá scroll horizontal
+    document.body.style.overflowX = 'hidden';
     return () => {
-      document.body.style.overflow = 'auto';
-      document.body.style.height = 'auto';
+      document.body.style.overflowX = 'auto';
     };
   }, []);
 
