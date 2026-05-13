@@ -21,11 +21,20 @@ const Sidebar = ({ isCollapsed, setIsCollapsed, isMobileOpen, setIsMobileOpen })
     { icon: <Building2 size={22} />, label: 'Empresas', path: '/companies' },
     { icon: <DollarSign size={22} />, label: 'Folha de Pagamento', path: '/payroll' },
     { icon: <FileText size={22} />, label: 'Documentos', path: '/documents' },
+    { icon: <DollarSign size={22} />, label: 'Controle de Custo', path: '/cost-control', externalOnly: true },
     { icon: <Users size={22} />, label: 'Usuários', path: '/users', adminOnly: true },
   ];
 
   const isAdmin = ['DESENVOLVEDOR', 'DONO', 'SOCIO', 'ADMIN'].includes(user?.role);
-  const filteredItems = menuItems.filter(item => !item.adminOnly || isAdmin);
+  const isExternal = user?.role === 'CLIENTE_EXTERNO';
+
+  const filteredItems = menuItems.filter(item => {
+    if (isExternal) return item.path === '/cost-control' || item.path === '/profile';
+    if (item.adminOnly && !isAdmin) return false;
+    // Opcional: ocultar controle de custo para admin se for apenas para o cliente
+    // if (item.externalOnly && !isExternal) return false; 
+    return true;
+  });
 
   return (
     <aside className={`${styles.sidebar} ${isCollapsed ? styles.collapsed : ''} ${isMobileOpen ? styles.mobileOpen : ''}`}>

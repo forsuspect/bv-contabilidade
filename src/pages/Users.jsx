@@ -38,7 +38,8 @@ const UsersPage = () => {
     'SOCIO': 60,
     'ADMIN': 50,
     'CONTADOR': 40,
-    'ANALISTA': 20
+    'ANALISTA': 20,
+    'CLIENTE_EXTERNO': 10
   };
 
   const currentUserWeight = roleWeights[currentUser?.role] || 0;
@@ -61,6 +62,7 @@ const UsersPage = () => {
       case 'ADMIN': return <span className={`${styles.badge} ${styles.badgeAdmin}`}>Admin</span>;
       case 'CONTADOR': return <span className={`${styles.badge} ${styles.badgeContador}`}>Contador</span>;
       case 'ANALISTA': return <span className={`${styles.badge} ${styles.badgeAnalista}`}>Analista</span>;
+      case 'CLIENTE_EXTERNO': return <span className={`${styles.badge}`} style={{ background: 'rgba(99, 102, 241, 0.15)', color: '#6366f1' }}>Cliente Externo</span>;
       default: return <span className={styles.badge}>{role || 'Usuário'}</span>;
     }
   };
@@ -228,6 +230,7 @@ const UsersPage = () => {
                 <select value={formData.role} onChange={e => setFormData({...formData, role: e.target.value})}>
                   <option value="ANALISTA">Analista</option>
                   <option value="CONTADOR">Contador</option>
+                  <option value="CLIENTE_EXTERNO">Cliente Externo (Acesso Restrito)</option>
                   {currentUser?.role === 'DESENVOLVEDOR' && (
                     <>
                       <option value="SOCIO">Sócio</option>

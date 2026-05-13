@@ -7,6 +7,7 @@ import Users from './pages/Users';
 import Documents from './pages/Documents';
 import Payroll from './pages/Payroll';
 import Profile from './pages/Profile';
+import CostControl from './pages/CostControl';
 import Layout from './components/Layout';
 import LoadingScreen from './components/LoadingScreen';
 import SafeToast from './components/SafeToast';
@@ -16,18 +17,21 @@ function App() {
 
   if (loading) return <LoadingScreen />;
 
+  const isExternal = user?.role === 'CLIENTE_EXTERNO';
+
   return (
     <Router>
       <SafeToast />
       <Routes>
-        <Route path="/login" element={!user ? <Login /> : <Navigate to="/" />} />
+        <Route path="/login" element={!user ? <Login /> : <Navigate to={isExternal ? "/cost-control" : "/"} />} />
         <Route path="/" element={user ? <Layout /> : <Navigate to="/login" />}>
-          <Route index element={<Dashboard />} />
-          <Route path="companies" element={<Companies />} />
-          <Route path="users" element={<Users />} />
-          <Route path="documents" element={<Documents />} />
-          <Route path="payroll" element={<Payroll />} />
+          <Route index element={isExternal ? <Navigate to="/cost-control" /> : <Dashboard />} />
+          <Route path="companies" element={isExternal ? <Navigate to="/cost-control" /> : <Companies />} />
+          <Route path="users" element={isExternal ? <Navigate to="/cost-control" /> : <Users />} />
+          <Route path="documents" element={isExternal ? <Navigate to="/cost-control" /> : <Documents />} />
+          <Route path="payroll" element={isExternal ? <Navigate to="/cost-control" /> : <Payroll />} />
           <Route path="profile" element={<Profile />} />
+          <Route path="cost-control" element={<CostControl />} />
         </Route>
       </Routes>
     </Router>
