@@ -18,10 +18,13 @@ export const AuthProvider = ({ children }) => {
   const login = (username, password) => {
     return new Promise(async (resolve, reject) => {
       try {
-        const usersList = await db.users.toArray();
-        const foundUser = usersList.find(u => u.username === username && u.password === password);
+        console.log('Tentativa de login:', username);
+        // Busca direta no banco por username
+        const foundUser = await db.users.where('username').equals(username).first();
         
-        if (foundUser) {
+        console.log('Usuário encontrado no banco:', foundUser ? 'Sim' : 'Não');
+
+        if (foundUser && foundUser.password === password) {
           if (foundUser.status === 'INACTIVE') {
             reject(new Error('Usuário inativo. Contate o administrador.'));
             return;
