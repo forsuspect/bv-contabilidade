@@ -4,24 +4,61 @@ import { Users, DollarSign, FileText, Plus, Search, Filter, MoreVertical, Downlo
 import styles from './HR.module.css';
 
 const HR = () => {
-  const { employees, addEmployee, companies } = useData();
+  const { employees, addEmployee, updateEmployee, deleteEmployee, companies } = useData();
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedFilterCompany, setSelectedFilterCompany] = useState('ALL');
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState({ name: '', companyId: '', role: '', salary: '' });
+  const [editingEmployee, setEditingEmployee] = useState(null);
 
   const safeEmployees = Array.isArray(employees) ? employees : [];
 
   const handleSaveEmployee = (e) => {
     e.preventDefault();
-    if (addEmployee) {
-      addEmployee({
-        ...formData,
-        status: 'Ativo'
-      });
+    if (editingEmployee) {
+      updateEmployee({ ...editingEmployee, ...formData });
+    } else {
+      addEmployee({ ...formData, status: 'Ativo' });
     }
     setShowModal(false);
+    setEditingEmployee(null);
     setFormData({ name: '', companyId: '', role: '', salary: '' });
   };
+
+  const handleEdit = (emp) => {
+    setEditingEmployee(emp);
+    setFormData({ name: emp.name, companyId: emp.companyId, role: emp.role, salary: emp.salary });
+    setShowModal(true);
+  };
+
+  const handleDelete = async (id) => {
+    if (window.confirm('Tem certeza que deseja remover este funcionário?')) {
+      await deleteEmployee(id);
+    }
+  };
+
+  const handleDownload = () => {
+    const headers = ['Funcionário', 'Empresa', 'Cargo', 'Salário', 'Status'];
+    const rows = filteredEmployees.map(emp => {
+      const company = companies?.find(c => c.id === emp.companyId);
+      return [emp.name, company?.name || 'N/A', emp.role, emp.salary, emp.status];
+    });
+    
+    const csvContent = [headers, ...rows].map(e => e.join(',')).join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'funcionarios_bv.csv';
+    link.click();
+  };
+
+  const filteredEmployees = safeEmployees.filter(emp => {
+    const matchesSearch = emp.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                         emp.role.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCompany = selectedFilterCompany === 'ALL' || emp.companyId === selectedFilterCompany;
+    return matchesSearch && matchesCompany;
+  });
 
   return (
     <div className={styles.container}>
@@ -78,10 +115,17 @@ const HR = () => {
             />
           </div>
           <div className={styles.actions}>
-            <button className={styles.iconButton}>
-              <Filter size={20} />
-            </button>
-            <button className={styles.iconButton}>
+            <select 
+              className={styles.filterSelect} 
+              value={selectedFilterCompany}
+              onChange={(e) => setSelectedFilterCompany(e.target.value)}
+            >
+              <option value="ALL">Todas as Empresas</option>
+              {companies?.map(c => (
+                <option key={c.id} value={c.id}>{c.name}</option>
+              ))}
+            </select>
+            <button className={styles.iconButton} title="Download Relatório" onClick={handleDownload}>
               <Download size={20} />
             </button>
           </div>
@@ -100,18 +144,18 @@ const HR = () => {
               </tr>
             </thead>
             <tbody>
-              {safeEmployees.length === 0 ? (
+              {filteredEmployees.length === 0 ? (
                 <tr>
                   <td colSpan="6" className={styles.emptyState}>
                     <div className={styles.emptyContent}>
                       <Users size={48} className={styles.emptyIcon} />
-                      <p>Nenhum funcionário cadastrado no sistema.</p>
-                      <button className={styles.emptyStateBtn} onClick={() => setShowModal(true)}>Cadastrar o primeiro</button>
+                      <p>Nenhum funcionário encontrado.</p>
+                      <button className={styles.emptyStateBtn} onClick={() => { setEditingEmployee(null); setShowModal(true); }}>Cadastrar o primeiro</button>
                     </div>
                   </td>
                 </tr>
               ) : (
-                safeEmployees.map((emp) => {
+                filteredEmployees.map((emp) => {
                   const company = companies?.find(c => c.id === emp.companyId);
                   return (
                     <tr key={emp.id}>
@@ -121,7 +165,10 @@ const HR = () => {
                       <td data-label="Salário">R$ {Number(emp.salary).toLocaleString('pt-BR')}</td>
                       <td data-label="Status">{emp.status}</td>
                       <td>
-                        <button className={styles.moreBtn}><MoreVertical size={20} /></button>
+                        <div className={styles.rowActions}>
+                          <button className={styles.editBtnRow} onClick={() => handleEdit(emp)}>Editar</button>
+                          <button className={styles.deleteBtnRow} onClick={() => handleDelete(emp.id)}>Excluir</button>
+                        </div>
                       </td>
                     </tr>
                   )
@@ -136,8 +183,10 @@ const HR = () => {
         <div className={styles.modalOverlay}>
           <div className={styles.modalCardForm}>
             <div className={styles.modalHeader}>
-              <h3 className={styles.modalTitle}>Cadastrar Novo Funcionário</h3>
-              <button className={styles.closeBtn} onClick={() => setShowModal(false)}><X size={20} /></button>
+              <h3 className={styles.modalTitle}>
+                {editingEmployee ? 'Editar Funcionário' : 'Cadastrar Novo Funcionário'}
+              </h3>
+              <button className={styles.closeBtn} onClick={() => { setShowModal(false); setEditingEmployee(null); }}><X size={20} /></button>
             </div>
             <form onSubmit={handleSaveEmployee} className={styles.form}>
               <div className={styles.inputGroup}>
@@ -162,8 +211,10 @@ const HR = () => {
                 <input required type="number" step="0.01" value={formData.salary} onChange={e => setFormData({...formData, salary: e.target.value})} placeholder="Ex: 2500.00" />
               </div>
               <div className={styles.modalActionsForm}>
-                <button type="button" className={styles.cancelBtn} onClick={() => setShowModal(false)}>Cancelar</button>
-                <button type="submit" className={styles.saveBtn}>Cadastrar</button>
+                <button type="button" className={styles.cancelBtn} onClick={() => { setShowModal(false); setEditingEmployee(null); }}>Cancelar</button>
+                <button type="submit" className={styles.saveBtn}>
+                  {editingEmployee ? 'Salvar' : 'Cadastrar'}
+                </button>
               </div>
             </form>
           </div>

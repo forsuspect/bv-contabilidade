@@ -347,6 +347,56 @@
   background-color: var(--primary-hover);
 }
 
+.filterSelect {
+  padding: 0.5rem 1rem;
+  border: 1px solid var(--gray-200);
+  border-radius: 8px;
+  font-size: 0.875rem;
+  color: var(--text-dark);
+  background: white;
+  outline: none;
+  cursor: pointer;
+}
+
+.filterSelect:focus {
+  border-color: var(--primary);
+}
+
+.rowActions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.editBtnRow, .deleteBtnRow {
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.editBtnRow {
+  background: rgba(10, 47, 92, 0.1);
+  color: var(--primary);
+}
+
+.editBtnRow:hover {
+  background: var(--primary);
+  color: white;
+}
+
+.deleteBtnRow {
+  background: #fef2f2;
+  color: #ef4444;
+}
+
+.deleteBtnRow:hover {
+  background: #ef4444;
+  color: white;
+}
+
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
   .header {

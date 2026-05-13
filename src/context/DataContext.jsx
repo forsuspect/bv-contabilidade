@@ -85,6 +85,17 @@ export const DataProvider = ({ children }) => {
     await logActivity('HR', `Novo funcionário ${employee.name} cadastrado.`);
   }
 
+  const updateEmployee = async (employee) => {
+    await db.employees.put(employee);
+    await logActivity('HR', `Dados do funcionário ${employee.name} atualizados.`);
+  }
+
+  const deleteEmployee = async (id) => {
+    const emp = await db.employees.get(id);
+    await db.employees.delete(id);
+    if (emp) await logActivity('HR', `Funcionário ${emp.name} removido.`);
+  }
+
   const addDocument = async (document) => {
     if (!currentUserId) return;
     const newDoc = { ...document, id: Date.now().toString(), uploadDate: new Date().toISOString(), userId: currentUserId };
@@ -115,7 +126,7 @@ export const DataProvider = ({ children }) => {
     <DataContext.Provider value={{ 
       companies, addCompany, updateCompany, deleteCompany,
       appUsers, addUser, updateUser, deleteUser,
-      employees, addEmployee,
+      employees, addEmployee, updateEmployee, deleteEmployee,
       documents, addDocument, deleteDocument,
       payrolls, addPayroll, updatePayrollStatus,
       activities
