@@ -4,9 +4,7 @@ import {
   LayoutDashboard, 
   Building2, 
   Users, 
-  Calculator, 
   FileText, 
-  Briefcase,
   ChevronLeft, 
   ChevronRight,
   LogOut,
@@ -21,7 +19,6 @@ const Sidebar = ({ isCollapsed, setIsCollapsed, isMobileOpen, setIsMobileOpen })
   const menuItems = [
     { icon: <LayoutDashboard size={22} />, label: 'Dashboard', path: '/' },
     { icon: <Building2 size={22} />, label: 'Empresas', path: '/companies' },
-    { icon: <Briefcase size={22} />, label: 'Recursos Humanos', path: '/hr' },
     { icon: <DollarSign size={22} />, label: 'Folha de Pagamento', path: '/payroll' },
     { icon: <FileText size={22} />, label: 'Documentos', path: '/documents' },
     { icon: <Users size={22} />, label: 'Usuários', path: '/users', adminOnly: true },
@@ -51,7 +48,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed, isMobileOpen, setIsMobileOpen })
               <NavLink 
                 to={item.path} 
                 className={({ isActive }) => isActive ? styles.activeLink : styles.link}
-                onClick={() => setIsMobileOpen(false)} // Close menu on click in mobile
+                onClick={() => setIsMobileOpen(false)}
               >
                 <span className={styles.icon}>{item.icon}</span>
                 {!isCollapsed && <span className={styles.label}>{item.label}</span>}

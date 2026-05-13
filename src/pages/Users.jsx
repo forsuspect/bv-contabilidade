@@ -78,11 +78,12 @@ const UsersPage = () => {
   const executeDelete = () => {
     if (userToDelete) {
       deleteUser(userToDelete.id);
-      showNotification('Usuário excluído com sucesso.', 'success');
+      toast('Usuário excluído com sucesso.', 'success');
       setShowDeleteModal(false);
       setUserToDelete(null);
     }
   };
+
 
   const openUserModal = (user = null) => {
     if (user) {
