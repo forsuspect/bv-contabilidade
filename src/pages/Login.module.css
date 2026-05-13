@@ -275,6 +275,8 @@
     background-color: #f8fafc;
     position: fixed;
     inset: 0;
+    height: 100vh;
+    height: -webkit-fill-available;
     height: 100dvh;
     width: 100vw;
     overflow: hidden;
@@ -282,6 +284,7 @@
     align-items: center;
     justify-content: center;
     touch-action: none;
+    padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
   }
   
   .formSection {
@@ -297,12 +300,14 @@
   
   .formContainer {
     background: white;
-    padding: 2rem 1.5rem;
+    padding: 1.5rem;
     border-radius: var(--radius-xl);
     box-shadow: var(--shadow-xl);
     width: 100%;
     max-width: 380px;
     margin: 0;
+    /* Ajuste específico para iPhones modernos (X, 11, 12, 13, 14, 15) */
+    max-height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 2rem);
   }
 
   .logoText {
