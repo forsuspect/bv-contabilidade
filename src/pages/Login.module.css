@@ -278,10 +278,11 @@
   .formSection {
     background-color: transparent;
     padding: 1.5rem;
-    min-height: 100vh;
+    height: 100dvh;
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow: hidden;
   }
   
   .formContainer {
@@ -290,5 +291,7 @@
     border-radius: var(--radius-xl);
     box-shadow: var(--shadow-xl);
     margin: auto;
+    max-height: 90vh;
+    overflow-y: auto;
   }
 }

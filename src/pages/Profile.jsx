@@ -1,10 +1,10 @@
 import React, { useState, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Camera, User, Mail, Lock, CheckCircle, Upload } from 'lucide-react';
+import { Camera, User, Mail, Lock, CheckCircle, Upload, LogOut } from 'lucide-react';
 import styles from './Profile.module.css';
 
 const Profile = () => {
-  const { user, updateProfile } = useAuth();
+  const { user, updateProfile, logout } = useAuth();
   const fileInputRef = useRef(null);
   
   const [formData, setFormData] = useState({
@@ -147,6 +147,10 @@ const Profile = () => {
             <div className={styles.formActions}>
               <button type="submit" className={styles.saveBtn}>
                 Salvar Alterações
+              </button>
+              <button type="button" className={styles.logoutBtnMobile} onClick={logout}>
+                <LogOut size={18} />
+                Sair da Conta
               </button>
             </div>
           </form>

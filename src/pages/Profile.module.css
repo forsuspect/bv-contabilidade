@@ -189,6 +189,7 @@
   margin-top: 2rem;
   display: flex;
   justify-content: flex-end;
+  gap: 1rem;
 }
 
 .saveBtn {
@@ -201,10 +202,43 @@
   font-size: 0.95rem;
   cursor: pointer;
   transition: all 0.2s;
+  flex: 1;
+}
+
+.logoutBtnMobile {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: white;
+  color: #ef4444;
+  border: 1px solid #fee2e2;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex: 1;
+}
+
+.logoutBtnMobile:hover {
+  background: #fef2f2;
+  border-color: #fecaca;
 }
 
 .saveBtn:hover {
   background: var(--primary-hover);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(10, 47, 92, 0.2);
+}
+
+@media (max-width: 768px) {
+  .formActions {
+    flex-direction: column;
+  }
+  
+  .saveBtn, .logoutBtnMobile {
+    width: 100%;
+  }
 }
