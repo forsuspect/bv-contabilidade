@@ -26,14 +26,14 @@ export const AuthProvider = ({ children }) => {
 
         if (foundUser && foundUser.password === password) {
           if (foundUser.status === 'INACTIVE') {
-            reject(new Error('Usuário inativo. Contate os donos ou desenvolvedores do projeto.'));
+            reject(new Error('Acesso Bloqueado: Este usuário está inativo. Por favor, entre em contato com os proprietários ou com o suporte técnico para reativar sua conta.'));
             return;
           }
           localStorage.setItem('bv_user', JSON.stringify(foundUser));
           setUser(foundUser);
           resolve(foundUser);
         } else {
-          reject(new Error('Usuário ou senha errada. Entre em contato com os donos ou desenvolvedores do projeto.'));
+          reject(new Error('Atenção: Usuário ou senha incorretos. Caso precise de um novo acesso ou tenha esquecido suas credenciais, entre em contato com os proprietários da plataforma ou com os desenvolvedores.'));
         }
       } catch (error) {
         reject(new Error('Erro ao conectar com o banco de dados'));

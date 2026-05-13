@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { Eye, EyeOff, Lock, User, Loader2, ArrowRight, CheckCircle2 } from 'lucide-react';
+import { Eye, EyeOff, Lock, User, Loader2, ArrowRight, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { motion } from 'framer-motion';
 import styles from './Login.module.css';
 
@@ -77,10 +77,7 @@ const Login = () => {
             </div>
 
             <div className={styles.inputGroup}>
-              <div className={styles.passwordHeader}>
-                <label htmlFor="password">Senha</label>
-                <a href="#" className={styles.forgotPassword} onClick={() => alert('Entre em contato com os donos ou desenvolvedores do projeto para recuperar sua senha.')}>Esqueceu a senha?</a>
-              </div>
+              <label htmlFor="password">Senha</label>
               <div className={styles.inputWrapper}>
                 <Lock size={18} className={styles.icon} />
                 <input
@@ -101,13 +98,27 @@ const Login = () => {
               </div>
             </div>
 
+            <div className={styles.forgotPasswordWrapper}>
+              <a href="#" className={styles.forgotPassword} onClick={() => alert('Entre em contato com os donos ou desenvolvedores do projeto para recuperar sua senha.')}>
+                Esqueceu a senha?
+              </a>
+            </div>
+
             {error && (
               <motion.div 
                 className={styles.error}
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
+                initial={{ opacity: 0, y: -20, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ 
+                  type: "spring",
+                  stiffness: 300,
+                  damping: 20
+                }}
               >
-                {error}
+                <AlertTriangle size={20} className={styles.errorIcon} />
+                <div className={styles.errorText}>
+                  {error}
+                </div>
               </motion.div>
             )}
 
