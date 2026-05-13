@@ -207,7 +207,7 @@ const CostControl = () => {
                 <label style={{ display: 'block', fontSize: '0.875rem', fontWeight: 500, marginBottom: '0.4rem' }}>Data</label>
                 <input type="date" value={formData.date} onChange={e => setFormData({...formData, date: e.target.value})} style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #e2e8f0' }} />
               </div>
-              <button type="submit" style={{ marginTop: '1rem', padding: '0.8rem', backgroundColor: '#3b82f6', color: 'white', borderRadius: '8px', border: 'none', fontWeight: 600, cursor: 'pointer' }}>Salvar Lançamento</button>
+              <button type="submit" className={styles.addBtn} style={{ width: '100%', marginTop: '1rem' }}>Salvar Lançamento</button>
             </form>
           </div>
         </div>
