@@ -273,9 +273,15 @@
   
   .container {
     background-color: #f8fafc;
+    position: fixed;
+    inset: 0;
     height: 100dvh;
+    width: 100vw;
     overflow: hidden;
-    display: block;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: none;
   }
   
   .formSection {
@@ -291,12 +297,12 @@
   
   .formContainer {
     background: white;
-    padding: 1.5rem;
+    padding: 2rem 1.5rem;
     border-radius: var(--radius-xl);
     box-shadow: var(--shadow-xl);
-    margin: auto;
     width: 100%;
     max-width: 380px;
+    margin: 0;
   }
 
   .logoText {

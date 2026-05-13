@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Eye, EyeOff, Lock, User, Loader2, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -11,6 +11,15 @@ const Login = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const { login } = useAuth();
+
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    document.body.style.height = '100%';
+    return () => {
+      document.body.style.overflow = 'auto';
+      document.body.style.height = 'auto';
+    };
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -122,7 +131,7 @@ const Login = () => {
 
           <p className={styles.footerText}>
             &copy; 2026 BV Contabilidade. Todos os direitos reservados.<br />
-            Desenvolvido por <a href="https://automatize.com" target="_blank" rel="noopener noreferrer" className={styles.agencyLink}>Automatize</a>
+            Desenvolvido por <a href="https://automize-xi.vercel.app/index.html#solucoes" target="_blank" rel="noopener noreferrer" className={styles.agencyLink}>Automize</a>
           </p>
         </motion.div>
       </div>
