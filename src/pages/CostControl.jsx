@@ -67,7 +67,7 @@ const CostControl = () => {
                 className={styles.monthSelect} 
                 value={targetUserId} 
                 onChange={e => setTargetUserId(e.target.value)}
-                style={{ padding: '0.4rem 0.8rem', fontSize: '0.875rem', fontWeight: 600, border: '2px solid #3b82f6', color: '#3b82f6' }}
+                style={{ padding: '0.4rem 0.8rem', fontSize: '0.875rem', fontWeight: 600, border: '2px solid #111827', color: '#111827' }}
               >
                 <option value={currentUser?.id}>Meu Próprio Controle</option>
                 {externalClients.map(u => (
@@ -180,7 +180,7 @@ const CostControl = () => {
         <div className={styles.modalOverlay} style={{ position: 'fixed', inset: 0, backgroundColor: 'rgba(15, 23, 42, 0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
           <div style={{ backgroundColor: 'white', padding: '2rem', borderRadius: '16px', width: '100%', maxWidth: '450px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-              <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 600 }}>Novo Custo</h3>
+              <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 600 }}>Novo Lançamento</h3>
               <button onClick={() => setShowAddForm(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={24} /></button>
             </div>
             <form onSubmit={handleAddCost} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
