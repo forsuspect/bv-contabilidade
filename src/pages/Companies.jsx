@@ -332,93 +332,152 @@ const ObligationsPanel = ({ company, onClose }) => {
 };
 
 
-// Função para gerar Relatório PDF Moderno
+// Função para gerar Relatório PDF Premium e Estilizado
 const generateCompanyReport = (company, obligations, apurations) => {
   try {
-    console.log('Gerando PDF para:', company.name);
+    console.log('Gerando PDF Premium para:', company.name);
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
 
-    // Cabeçalho Estilizado
+    // 1. Cabeçalho Corporativo (Full Width)
     doc.setFillColor(15, 23, 42); // Navy Dark
-    doc.rect(0, 0, pageWidth, 45, 'F');
+    doc.rect(0, 0, pageWidth, 50, 'F');
     
     doc.setTextColor(255, 255, 255);
-    doc.setFontSize(24);
+    doc.setFontSize(28);
     doc.setFont('helvetica', 'bold');
-    doc.text('BV CONTABILIDADE', 15, 22);
+    doc.text('BV CONTABILIDADE', 20, 25);
     
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
-    doc.text('Relatório Consolidado de Gestão Contábil', 15, 32);
-    doc.text(new Date().toLocaleDateString('pt-BR'), pageWidth - 15, 22, { align: 'right' });
+    doc.setTextColor(148, 163, 184); // Slate-400
+    doc.text('SOLUÇÕES CONTÁBEIS E GESTÃO EMPRESARIAL', 20, 33);
+    
+    doc.setTextColor(255, 255, 255);
+    doc.text(`GERADO EM: ${new Date().toLocaleDateString('pt-BR')} ${new Date().toLocaleTimeString('pt-BR')}`, pageWidth - 20, 25, { align: 'right' });
 
-    // Dados da Empresa
+    // 2. Título do Documento
     doc.setTextColor(15, 23, 42);
-    doc.setFontSize(14);
+    doc.setFontSize(18);
     doc.setFont('helvetica', 'bold');
-    doc.text('DADOS DA EMPRESA', 15, 60);
-    
-    doc.setDrawColor(226, 232, 240);
-    doc.line(15, 63, pageWidth - 15, 63);
+    doc.text('RELATÓRIO CONSOLIDADO DE GESTÃO', 20, 70);
+    doc.setDrawColor(59, 130, 246); // Blue-500
+    doc.setLineWidth(1);
+    doc.line(20, 75, 60, 75);
 
-    doc.setFontSize(10);
+    // 3. Informações da Empresa (Card Look)
+    doc.setFillColor(248, 250, 252); // Slate-50
+    doc.roundedRect(20, 85, pageWidth - 40, 35, 3, 3, 'F');
+    
+    doc.setTextColor(71, 85, 105);
+    doc.setFontSize(9);
     doc.setFont('helvetica', 'bold');
-    doc.text('Razão Social:', 15, 73);
-    doc.text('CNPJ:', 15, 80);
-    doc.text('Regime Tributário:', 15, 87);
+    doc.text('IDENTIFICAÇÃO DA EMPRESA', 25, 93);
+    
+    doc.setTextColor(15, 23, 42);
+    doc.setFontSize(11);
+    doc.text(`RAZÃO SOCIAL:`, 25, 103);
+    doc.text(`CNPJ:`, 25, 110);
+    doc.text(`REGIME:`, (pageWidth / 2), 110);
     
     doc.setFont('helvetica', 'normal');
-    doc.text(company.name || '---', 45, 73);
-    doc.text(company.cnpj || '---', 45, 80);
-    doc.text(company.regime?.replace(/_/g, ' ') || 'Não informado', 45, 87);
+    doc.text(company.name?.toUpperCase() || '---', 60, 103);
+    doc.text(company.cnpj || '---', 40, 110);
+    doc.text(company.regime?.replace(/_/g, ' ') || 'NÃO INFORMADO', (pageWidth / 2) + 20, 110);
 
-    // Histórico de Apurações
-    doc.setFontSize(14);
+    // 4. Resumo Financeiro Acumulado (Highlights)
+    const totalFat = apurations.reduce((s, a) => s + Number(a.faturamento), 0);
+    const totalImp = apurations.reduce((s, a) => s + Number(a.imposto), 0);
+
+    doc.setFillColor(236, 253, 245); // Emerald-50
+    doc.roundedRect(20, 125, (pageWidth - 45) / 2, 20, 2, 2, 'F');
+    doc.setTextColor(5, 150, 105);
+    doc.setFontSize(8);
+    doc.text('FATURAMENTO TOTAL ACUMULADO', 25, 132);
+    doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
-    doc.text('HISTÓRICO DE APURAÇÕES FISCAIS', 15, 105);
+    doc.text(`R$ ${totalFat.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, 25, 140);
+
+    doc.setFillColor(254, 242, 242); // Red-50
+    doc.roundedRect((pageWidth / 2) + 2.5, 125, (pageWidth - 45) / 2, 20, 2, 2, 'F');
+    doc.setTextColor(185, 28, 28);
+    doc.setFontSize(8);
+    doc.text('TOTAL DE IMPOSTOS APURADOS', (pageWidth / 2) + 7.5, 132);
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`R$ ${totalImp.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, (pageWidth / 2) + 7.5, 140);
+
+    // 5. Tabela de Histórico Fiscal
+    doc.setTextColor(15, 23, 42);
+    doc.setFontSize(13);
+    doc.text('HISTÓRICO FISCAL DETALHADO', 20, 160);
     
     const apurRows = apurations.map(ap => [
       `${MONTH_NAMES[ap.mes]} / ${ap.ano}`,
       `R$ ${Number(ap.faturamento).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
       `R$ ${Number(ap.imposto).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`,
-      new Date(ap.confirmedAt || new Date()).toLocaleDateString('pt-BR')
+      'CONFIRMADO'
     ]);
 
     autoTable(doc, {
-      startY: 110,
-      head: [['Mês/Ano', 'Faturamento', 'Imposto', 'Confirmação']],
-      body: apurRows.length > 0 ? apurRows : [['-', 'Nenhuma apuração registrada', '-', '-']],
+      startY: 165,
+      margin: { left: 20, right: 20 },
+      head: [['MÊS REFERÊNCIA', 'FATURAMENTO BRUTO', 'IMPOSTO APURADO', 'STATUS']],
+      body: apurRows.length > 0 ? apurRows : [['-', 'Sem registros', '-', '-']],
       theme: 'grid',
-      headStyles: { fillColor: [15, 23, 42], textColor: 255 },
-      styles: { fontSize: 9 }
+      headStyles: { fillColor: [15, 23, 42], textColor: 255, fontSize: 9, fontStyle: 'bold', halign: 'center' },
+      columnStyles: {
+        0: { halign: 'left' },
+        1: { halign: 'right' },
+        2: { halign: 'right' },
+        3: { halign: 'center', textColor: [16, 185, 129] }
+      },
+      styles: { fontSize: 9, cellPadding: 5 }
     });
 
-    // Obrigações
-    const lastY = doc.lastAutoTable.finalY + 15;
-    doc.setFontSize(14);
-    doc.setFont('helvetica', 'bold');
-    doc.text('OBRIGAÇÕES E VENCIMENTOS', 15, lastY);
+    // 6. Obrigações e Calendário
+    let currentY = doc.lastAutoTable.finalY + 15;
+    if (currentY > pageHeight - 60) { doc.addPage(); currentY = 20; }
+
+    doc.setTextColor(15, 23, 42);
+    doc.setFontSize(13);
+    doc.text('CALENDÁRIO DE OBRIGAÇÕES EXTRAS', 20, currentY);
 
     const obRows = obligations.map(ob => [
-      ob.name,
-      ob.type === 'fiscal' ? 'Fiscal' : 'Trabalhista',
-      `Dia ${ob.day}${ob.month > 0 ? ` de ${MONTH_NAMES[ob.month]}` : ' (Mensal)'}`
+      ob.name.toUpperCase(),
+      ob.type === 'fiscal' ? 'FISCAL' : 'TRABALHISTA',
+      `DIA ${ob.day}${ob.month > 0 ? ` DE ${MONTH_NAMES[ob.month].toUpperCase()}` : ' (MENSAL)'}`
     ]);
 
     autoTable(doc, {
-      startY: lastY + 5,
-      head: [['Obrigação', 'Tipo', 'Vencimento']],
-      body: obRows.length > 0 ? obRows : [['-', 'Sem obrigações customizadas', '-']],
+      startY: currentY + 5,
+      margin: { left: 20, right: 20 },
+      head: [['NOME DA OBRIGAÇÃO', 'CATEGORIA', 'VENCIMENTO']],
+      body: obRows.length > 0 ? obRows : [['-', 'Nenhuma obrigação customizada', '-']],
       theme: 'striped',
-      headStyles: { fillColor: [71, 85, 105], textColor: 255 }
+      headStyles: { fillColor: [71, 85, 105], textColor: 255, fontSize: 9 },
+      styles: { fontSize: 8, cellPadding: 4 }
     });
 
-    doc.save(`Relatorio_${company.name.replace(/\s+/g, '_')}.pdf`);
-    toast('Relatório PDF gerado!', 'success');
+    // 7. Rodapé Profissional
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setDrawColor(226, 232, 240);
+      doc.line(20, pageHeight - 25, pageWidth - 20, pageHeight - 25);
+      
+      doc.setFontSize(8);
+      doc.setTextColor(148, 163, 184);
+      doc.text('Este documento é um relatório gerencial da plataforma BV Contabilidade.', 20, pageHeight - 18);
+      doc.text(`Página ${i} de ${pageCount}`, pageWidth - 20, pageHeight - 18, { align: 'right' });
+    }
+
+    doc.save(`Relatorio_Premium_${company.name.replace(/\s+/g, '_')}.pdf`);
+    toast('Relatório Premium gerado!', 'success');
   } catch (error) {
-    console.error('Erro PDF:', error);
-    toast('Erro ao gerar relatório PDF.', 'error');
+    console.error('Erro PDF Premium:', error);
+    toast('Erro ao gerar relatório estilizado.', 'error');
   }
 };
 
