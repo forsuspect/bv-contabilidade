@@ -10,6 +10,7 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [showForgotMessage, setShowForgotMessage] = useState(false);
   const { login } = useAuth();
 
   useEffect(() => {
@@ -99,10 +100,33 @@ const Login = () => {
             </div>
 
             <div className={styles.forgotPasswordWrapper}>
-              <a href="#" className={styles.forgotPassword} onClick={() => alert('Entre em contato com os donos ou desenvolvedores do projeto para recuperar sua senha.')}>
+              <button 
+                type="button" 
+                className={styles.forgotPassword} 
+                onClick={() => setShowForgotMessage(true)}
+              >
                 Esqueceu a senha?
-              </a>
+              </button>
             </div>
+
+            {showForgotMessage && (
+              <motion.div 
+                className={styles.forgotCard}
+                initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+              >
+                <div className={styles.forgotHeader}>
+                  <div className={styles.forgotTitle}>
+                    <Lock size={16} />
+                    Recuperação de Acesso
+                  </div>
+                  <button onClick={() => setShowForgotMessage(false)}><X size={16} /></button>
+                </div>
+                <p className={styles.forgotText}>
+                  Para sua segurança, a redefinição de senha deve ser solicitada diretamente aos <strong>Administradores</strong> da BV Contabilidade ou à equipe de suporte da <strong>Automize</strong>.
+                </p>
+              </motion.div>
+            )}
 
             {error && (
               <motion.div 
