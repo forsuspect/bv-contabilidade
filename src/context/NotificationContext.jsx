@@ -1,5 +1,8 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
-import Notification from '../components/Notification';
+import { AnimatePresence } from 'framer-motion';
+import NotificationCard from '../components/NotificationCard';
+
+
 
 const NotificationContext = createContext();
 
@@ -33,14 +36,18 @@ export const NotificationProvider = ({ children }) => {
         gap: '10px',
         pointerEvents: 'none'
       }}>
-        {notifications.map(n => (
-          <Notification 
-            key={n.id} 
-            message={n.message} 
-            type={n.type} 
-            onClose={() => removeNotification(n.id)} 
-          />
-        ))}
+        <AnimatePresence>
+          {notifications.map(n => (
+            <NotificationCard 
+              key={n.id} 
+              message={n.message} 
+              type={n.type} 
+              onClose={() => removeNotification(n.id)} 
+            />
+          ))}
+        </AnimatePresence>
+
+
       </div>
     </NotificationContext.Provider>
   );

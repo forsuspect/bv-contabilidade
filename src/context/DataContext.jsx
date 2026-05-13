@@ -31,7 +31,7 @@ export const DataProvider = ({ children }) => {
 
   // Função auxiliar para converter snake_case para camelCase
   const fromSnakeCase = (obj) => {
-    if (!obj) return obj;
+    if (!obj || typeof obj !== 'object') return obj;
     const newObj = {};
     for (const key in obj) {
       const camelKey = key.replace(/_([a-z])/g, g => g[1].toUpperCase());
@@ -39,6 +39,7 @@ export const DataProvider = ({ children }) => {
     }
     return newObj;
   };
+
 
 
 

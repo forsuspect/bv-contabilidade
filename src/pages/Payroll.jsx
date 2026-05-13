@@ -90,7 +90,8 @@ const Payroll = () => {
                       {p.month}
                     </div>
                   </td>
-                  <td>R$ {p.totalValue.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+                  <td>R$ {(p.totalValue || 0).toLocaleString('pt-BR', { minimumFractionDigits: 2 })}</td>
+
                   <td>
                     <span className={`${styles.statusBadge} ${p.status === 'APROVADO' ? styles.approved : styles.pending}`}>
                       {p.status === 'APROVADO' ? <CheckCircle size={12} style={{marginRight: '4px'}} /> : <Clock size={12} style={{marginRight: '4px'}} />}
