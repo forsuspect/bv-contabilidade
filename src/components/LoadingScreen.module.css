@@ -1,0 +1,47 @@
+.container {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--primary);
+  z-index: 9999;
+}
+
+.content {
+  text-align: center;
+}
+
+.logo {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: white;
+  margin-bottom: 2rem;
+  letter-spacing: -1px;
+}
+
+.logo span {
+  color: var(--accent);
+}
+
+.loader {
+  width: 200px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  overflow: hidden;
+  margin: 0 auto;
+}
+
+.bar {
+  width: 40%;
+  height: 100%;
+  background: var(--accent);
+  box-shadow: 0 0 15px var(--accent-glow);
+  animation: move 1.5s infinite ease-in-out;
+}
+
+@keyframes move {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(250%); }
+}
