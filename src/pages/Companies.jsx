@@ -16,35 +16,14 @@ const MONTH_NAMES = [
   "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
 ];
 
-// Obrigações padrão por regime
+// Obrigações padrão por regime (Zeradas a pedido do usuário)
 const DEFAULT_FISCAL = {
-  SIMPLES_NACIONAL: [
-    { name: 'DAS – Simples Nacional', day: 20, month: 0, type: 'fiscal', recurring: true },
-    { name: 'PGDAS-D', day: 20, month: 0, type: 'fiscal', recurring: true },
-    { name: 'DEFIS (anual)', day: 31, month: 3, type: 'fiscal', recurring: false },
-  ],
-  LUCRO_PRESUMIDO: [
-    { name: 'IRPJ Trimestral', day: 30, month: 0, type: 'fiscal', recurring: true },
-    { name: 'CSLL Trimestral', day: 30, month: 0, type: 'fiscal', recurring: true },
-    { name: 'PIS/COFINS', day: 25, month: 0, type: 'fiscal', recurring: true },
-    { name: 'DCTF Mensal', day: 15, month: 0, type: 'fiscal', recurring: true },
-  ],
-  LUCRO_REAL: [
-    { name: 'IRPJ (LALUR)', day: 30, month: 0, type: 'fiscal', recurring: true },
-    { name: 'CSLL Mensal', day: 30, month: 0, type: 'fiscal', recurring: true },
-    { name: 'PIS/COFINS Não-cumulativo', day: 25, month: 0, type: 'fiscal', recurring: true },
-    { name: 'DCTF Mensal', day: 15, month: 0, type: 'fiscal', recurring: true },
-    { name: 'ECF (anual)', day: 31, month: 7, type: 'fiscal', recurring: false },
-  ],
+  SIMPLES_NACIONAL: [],
+  LUCRO_PRESUMIDO: [],
+  LUCRO_REAL: [],
 };
-const DEFAULT_LABOR = [
-  { name: 'FGTS Mensal', day: 7, month: 0, type: 'labor', recurring: true },
-  { name: 'GPS / INSS Patronal', day: 20, month: 0, type: 'labor', recurring: true },
-  { name: 'Folha de Pagamento', day: 5, month: 0, type: 'labor', recurring: true },
-  { name: 'SEFIP/GFIP', day: 7, month: 0, type: 'labor', recurring: true },
-  { name: 'RAIS (anual)', day: 31, month: 3, type: 'labor', recurring: false },
-  { name: 'CAGED', day: 7, month: 0, type: 'labor', recurring: true },
-];
+
+const DEFAULT_LABOR = [];
 
 // Calendário mini
 const MiniCalendar = ({ obligations }) => {
