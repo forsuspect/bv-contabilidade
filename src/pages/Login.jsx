@@ -79,7 +79,7 @@ const Login = () => {
             <div className={styles.inputGroup}>
               <div className={styles.passwordHeader}>
                 <label htmlFor="password">Senha</label>
-                <a href="#" className={styles.forgotPassword}>Esqueceu a senha?</a>
+                <a href="#" className={styles.forgotPassword} onClick={() => alert('Entre em contato com os donos ou desenvolvedores do projeto para recuperar sua senha.')}>Esqueceu a senha?</a>
               </div>
               <div className={styles.inputWrapper}>
                 <Lock size={18} className={styles.icon} />
@@ -128,6 +128,7 @@ const Login = () => {
               )}
             </motion.button>
           </form>
+          {/* Build trigger comment: ensure all login messages are updated */}
 
           <p className={styles.footerText}>
             &copy; 2026 BV Contabilidade. Todos os direitos reservados.<br />
