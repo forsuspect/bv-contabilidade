@@ -21,6 +21,7 @@ export const DataProvider = ({ children }) => {
   const [activities, setActivities] = useState([]);
   const [obligations, setObligations] = useState([]);
   const [apurations, setApurations] = useState([]);
+  const [costs, setCosts] = useState([]);
 
   // Função auxiliar para converter camelCase para snake_case (Supabase padrão)
   const toSnakeCase = (obj) => {
@@ -104,6 +105,13 @@ export const DataProvider = ({ children }) => {
         .select('*')
         .eq('user_id', currentUserId);
       setPayrolls(payrollsData?.map(fromSnakeCase) || []);
+
+      // Buscar Custos
+      const { data: costsData } = await supabase
+        .from('costs')
+        .select('*')
+        .eq('user_id', currentUserId);
+      setCosts(costsData?.map(fromSnakeCase) || []);
 
       
     } catch (err) {
@@ -344,6 +352,27 @@ export const DataProvider = ({ children }) => {
     else toast('Erro ao atualizar status: ' + error.message, 'error');
   }
 
+  // Custos
+  const addCost = async (cost) => {
+    if (!currentUserId) return;
+    const { error } = await supabase.from('costs').insert([{ ...toSnakeCase(cost), user_id: currentUserId }]);
+    if (error) {
+      console.error('Erro ao adicionar custo:', error);
+      toast('Erro ao salvar custo.', 'error');
+    } else {
+      await logActivity('FINANCE', `Novo custo registrado: ${cost.description}.`);
+      fetchData();
+    }
+  };
+
+  const deleteCost = async (id) => {
+    const { error } = await supabase.from('costs').delete().eq('id', id);
+    if (!error) {
+      await logActivity('FINANCE', `Um registro de custo foi removido.`);
+      fetchData();
+    }
+  };
+
 
 
   return (
@@ -355,7 +384,8 @@ export const DataProvider = ({ children }) => {
       payrolls, addPayroll, updatePayrollStatus,
       activities,
       obligations, addObligation, deleteObligation,
-      apurations, addApuracao
+      apurations, addApuracao,
+      costs, addCost, deleteCost
     }}>
       {children}
     </DataContext.Provider>
