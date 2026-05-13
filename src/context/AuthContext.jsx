@@ -54,13 +54,23 @@ export const AuthProvider = ({ children }) => {
   const updateProfile = async (updatedData) => {
     const newData = { ...user, ...updatedData };
     
+    // Converte camelCase para snake_case para o Supabase
+    const snakeData = {};
+    for (const key in updatedData) {
+      const snakeKey = key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+      snakeData[snakeKey] = updatedData[key];
+    }
+    
     try {
       const { error } = await supabase
         .from('users')
-        .update(updatedData)
+        .update(snakeData)
         .eq('id', user.id);
-      
-      if (error) throw error;
+
+      if (error) {
+        alert('Erro ao atualizar perfil: ' + error.message);
+        throw error;
+      }
     } catch (err) {
       console.error('Erro ao salvar no banco:', err);
     }
@@ -68,6 +78,7 @@ export const AuthProvider = ({ children }) => {
     setUser(newData);
     localStorage.setItem('bv_user', JSON.stringify(newData));
   };
+
 
   return (
     <AuthContext.Provider value={{ user, login, logout, updateProfile, loading }}>

@@ -15,6 +15,17 @@ export const DataProvider = ({ children }) => {
   const [payrolls, setPayrolls] = useState([]);
   const [activities, setActivities] = useState([]);
 
+  // Função auxiliar para converter camelCase para snake_case (Supabase padrão)
+  const toSnakeCase = (obj) => {
+    const newObj = {};
+    for (const key in obj) {
+      const snakeKey = key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+      newObj[snakeKey] = obj[key];
+    }
+    return newObj;
+  };
+
+
   // Função para carregar todos os dados
   const fetchData = async () => {
     if (!currentUserId) return;
@@ -89,16 +100,28 @@ export const DataProvider = ({ children }) => {
 
   const addCompany = async (company) => {
     if (!currentUserId) return;
-    const { error } = await supabase.from('companies').insert([{
-      ...company,
-      user_id: currentUserId
-    }]);
     
-    if (!error) {
+    const dataToSave = {
+      name: company.name,
+      fantasy_name: company.fantasyName,
+      cnpj: company.cnpj,
+      regime: company.regime,
+      status: company.status || 'ACTIVE',
+      estimated_tax: company.estimatedTax || 0,
+      user_id: currentUserId
+    };
+
+    const { error } = await supabase.from('companies').insert([dataToSave]);
+    
+    if (error) {
+      console.error('Erro ao adicionar empresa:', error);
+      alert('Erro ao cadastrar empresa: ' + error.message);
+    } else {
       await logActivity('COMPANY', `Empresa ${company.name} foi cadastrada.`);
       fetchData();
     }
   }
+
 
   const updateCompany = async (company) => {
     const { error } = await supabase.from('companies').update(company).eq('id', company.id);
@@ -134,16 +157,29 @@ export const DataProvider = ({ children }) => {
 
   const addEmployee = async (employee) => {
     if (!currentUserId) return;
-    const { error } = await supabase.from('employees').insert([{
-      ...employee,
-      user_id: currentUserId
-    }]);
     
-    if (!error) {
+    const dataToSave = {
+      name: employee.name,
+      company_id: employee.companyId,
+      role: employee.role,
+      salary: employee.salary,
+      status: employee.status || 'Ativo',
+      user_id: currentUserId
+    };
+
+    console.log('Enviando funcionário para Supabase:', dataToSave);
+    
+    const { error } = await supabase.from('employees').insert([dataToSave]);
+    
+    if (error) {
+      console.error('Erro ao adicionar funcionário:', error);
+      alert('Erro ao cadastrar funcionário: ' + error.message);
+    } else {
       await logActivity('HR', `Novo funcionário ${employee.name} cadastrado.`);
       fetchData();
     }
   }
+
 
   const updateEmployee = async (employee) => {
     const { error } = await supabase.from('employees').update(employee).eq('id', employee.id);
@@ -164,16 +200,41 @@ export const DataProvider = ({ children }) => {
 
   const addDocument = async (document) => {
     if (!currentUserId) return;
-    const { error } = await supabase.from('documents').insert([{
-      ...document,
-      user_id: currentUserId
-    }]);
     
-    if (!error) {
+    const dataToSave = {
+      name: document.name,
+      company_id: document.companyId,
+      category: document.category,
+      type: document.type,
+      size: document.size,
+      date: document.date,
+      file_data: document.fileData,
+      user_id: currentUserId
+    };
+
+    console.log('Enviando documento para Supabase:', dataToSave);
+    
+    const { error } = await supabase.from('documents').insert([dataToSave]);
+    
+    if (error) {
+      console.error('Erro ao adicionar documento:', error);
+      // Fallback sem file_data se a coluna não existir
+      if (error.message.includes('file_data')) {
+        const { file_data, ...noFileData } = dataToSave;
+        const { error: error2 } = await supabase.from('documents').insert([noFileData]);
+        if (!error2) {
+          await logActivity('DOC', `Documento ${document.name} enviado (sem arquivo).`);
+          fetchData();
+          return;
+        }
+      }
+      alert('Erro ao enviar documento: ' + error.message);
+    } else {
       await logActivity('DOC', `Documento ${document.name} foi enviado.`);
       fetchData();
     }
   }
+
 
   const deleteDocument = async (id) => {
     const { data: doc } = await supabase.from('documents').select('name').eq('id', id).single();

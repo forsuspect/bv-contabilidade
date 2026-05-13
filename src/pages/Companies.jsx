@@ -66,16 +66,16 @@ const Companies = () => {
       return;
     }
 
-    if (addCompany) {
       addCompany({
         ...formData,
         status: 'ACTIVE',
         estimatedTax: 0
       });
-    }
     setShowModal(false);
     setFormData({ name: '', fantasyName: '', cnpj: '', regime: 'SIMPLES_NACIONAL' });
   };
+
+
 
   const confirmDelete = (company) => {
     setCompanyToDelete(company);
@@ -162,17 +162,17 @@ const Companies = () => {
             <div className={styles.cardBody}>
               <div className={styles.infoRow}>
                 <span>Regime Tributário</span>
-                <span className={styles.badge}>{getRegimeLabel(company?.regime)}</span>
+                <span className={styles.badge}>{getRegimeLabel(company.regime)}</span>
               </div>
               <div className={styles.infoRow}>
                 <span>Status Fiscal</span>
-                <span className={`${styles.status} ${company?.status === 'ACTIVE' ? styles.statusActive : styles.statusPending}`}>
-                  {company?.status === 'ACTIVE' ? 'Regular' : 'Pendente'}
+                <span className={`${styles.status} ${company.status === 'ACTIVE' ? styles.statusActive : styles.statusPending}`}>
+                  {company.status === 'ACTIVE' ? 'Regular' : 'Pendente'}
                 </span>
               </div>
               <div className={styles.infoRow}>
                 <span>Imposto Estimado</span>
-                <span className={styles.value}>R$ {company?.estimatedTax ? Number(company.estimatedTax).toLocaleString('pt-BR') : '0,00'}</span>
+                <span className={styles.value}>R$ {Number(company.estimated_tax || 0).toLocaleString('pt-BR')}</span>
               </div>
             </div>
 
