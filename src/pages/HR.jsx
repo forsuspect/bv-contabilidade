@@ -8,8 +8,9 @@ const HR = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedFilterCompany, setSelectedFilterCompany] = useState('ALL');
   const [showModal, setShowModal] = useState(false);
-  const [formData, setFormData] = useState({ name: '', companyId: '', role: '', salary: '' });
+  const [formData, setFormData] = useState({ name: '', companyId: '', role: '', salary: '', cpf: '' });
   const [editingEmployee, setEditingEmployee] = useState(null);
+
 
   const safeEmployees = Array.isArray(employees) ? employees : [];
 
@@ -22,14 +23,16 @@ const HR = () => {
     }
     setShowModal(false);
     setEditingEmployee(null);
-    setFormData({ name: '', companyId: '', role: '', salary: '' });
+    setFormData({ name: '', companyId: '', role: '', salary: '', cpf: '' });
   };
+
 
   const handleEdit = (emp) => {
     setEditingEmployee(emp);
-    setFormData({ name: emp.name, companyId: emp.companyId, role: emp.role, salary: emp.salary });
+    setFormData({ name: emp.name, companyId: emp.companyId, role: emp.role, salary: emp.salary, cpf: emp.cpf || '' });
     setShowModal(true);
   };
+
 
   const handleDelete = async (id) => {
     if (window.confirm('Tem certeza que deseja remover este funcionário?')) {
@@ -136,12 +139,14 @@ const HR = () => {
             <thead>
               <tr>
                 <th>Funcionário</th>
+                <th>CPF</th>
                 <th>Empresa</th>
                 <th>Cargo</th>
                 <th>Salário Base</th>
                 <th>Status</th>
                 <th>Ações</th>
               </tr>
+
             </thead>
             <tbody>
               {filteredEmployees.length === 0 ? (
@@ -160,10 +165,13 @@ const HR = () => {
                   return (
                     <tr key={emp.id}>
                       <td data-label="Funcionário">{emp.name}</td>
-                      <td data-label="Empresa">{company ? company.name : 'N/A'}</td>
+                      <td data-label="CPF">{emp.cpf || 'N/A'}</td>
+                      <td data-label="Empresa">{companies?.find(c => c.id.toString() === emp.companyId?.toString())?.name || 'N/A'}</td>
                       <td data-label="Cargo">{emp.role}</td>
                       <td data-label="Salário">R$ {Number(emp.salary).toLocaleString('pt-BR')}</td>
                       <td data-label="Status">{emp.status}</td>
+
+
                       <td>
                         <div className={styles.rowActions}>
                           <button className={styles.editBtnRow} onClick={() => handleEdit(emp)}>Editar</button>
@@ -193,6 +201,11 @@ const HR = () => {
                 <label>Nome Completo</label>
                 <input required type="text" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} placeholder="Ex: Carlos Oliveira" />
               </div>
+              <div className={styles.inputGroup}>
+                <label>CPF</label>
+                <input type="text" value={formData.cpf} onChange={e => setFormData({...formData, cpf: e.target.value})} placeholder="000.000.000-00" />
+              </div>
+
               <div className={styles.inputGroup}>
                 <label>Empresa Vinculada</label>
                 <select required value={formData.companyId} onChange={e => setFormData({...formData, companyId: e.target.value})}>

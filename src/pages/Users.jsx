@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useData } from '../context/DataContext';
 import { useAuth } from '../context/AuthContext';
+import { useNotification } from '../context/NotificationContext';
 import { 
   UserPlus, 
   Search, 
@@ -17,7 +18,9 @@ import styles from './Users.module.css';
 const UsersPage = () => {
   const { appUsers, deleteUser, updateUser, addUser } = useData();
   const { user: currentUser } = useAuth();
+  const { showNotification } = useNotification();
   const [searchTerm, setSearchTerm] = useState('');
+
   
   // Modal States
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -74,6 +77,7 @@ const UsersPage = () => {
   const executeDelete = () => {
     if (userToDelete) {
       deleteUser(userToDelete.id);
+      showNotification('Usuário excluído com sucesso.', 'success');
       setShowDeleteModal(false);
       setUserToDelete(null);
     }
@@ -99,8 +103,9 @@ const UsersPage = () => {
       if(addUser) {
         addUser({ ...formData, status: 'ACTIVE' });
       } else {
-        alert("Função de criar usuário requer backend.");
+        showNotification("Função de criar usuário requer backend.", "info");
       }
+
     }
     setShowUserModal(false);
   };

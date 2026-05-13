@@ -1,12 +1,16 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '../lib/supabaseClient';
 import { useAuth } from './AuthContext';
+import { useNotification } from './NotificationContext';
+
 
 const DataContext = createContext();
 
 export const DataProvider = ({ children }) => {
   const { user } = useAuth();
+  const { showNotification } = useNotification();
   const currentUserId = user?.id;
+
 
   const [companies, setCompanies] = useState([]);
   const [appUsers, setAppUsers] = useState([]);
@@ -25,6 +29,18 @@ export const DataProvider = ({ children }) => {
     return newObj;
   };
 
+  // Função auxiliar para converter snake_case para camelCase
+  const fromSnakeCase = (obj) => {
+    if (!obj) return obj;
+    const newObj = {};
+    for (const key in obj) {
+      const camelKey = key.replace(/_([a-z])/g, g => g[1].toUpperCase());
+      newObj[camelKey] = obj[key];
+    }
+    return newObj;
+  };
+
+
 
   // Função para carregar todos os dados
   const fetchData = async () => {
@@ -36,27 +52,27 @@ export const DataProvider = ({ children }) => {
         .from('companies')
         .select('*')
         .eq('user_id', currentUserId);
-      setCompanies(companiesData || []);
+      setCompanies(companiesData?.map(fromSnakeCase) || []);
 
       // Buscar Usuários (para o admin)
       const { data: usersData } = await supabase
         .from('users')
         .select('*');
-      setAppUsers(usersData || []);
+      setAppUsers(usersData?.map(fromSnakeCase) || []);
 
       // Buscar Funcionários
       const { data: employeesData } = await supabase
         .from('employees')
         .select('*')
         .eq('user_id', currentUserId);
-      setEmployees(employeesData || []);
+      setEmployees(employeesData?.map(fromSnakeCase) || []);
 
       // Buscar Documentos
       const { data: docsData } = await supabase
         .from('documents')
         .select('*')
         .eq('user_id', currentUserId);
-      setDocuments(docsData || []);
+      setDocuments(docsData?.map(fromSnakeCase) || []);
 
       // Buscar Atividades
       const { data: actsData } = await supabase
@@ -65,9 +81,18 @@ export const DataProvider = ({ children }) => {
         .eq('user_id', currentUserId)
         .order('timestamp', { ascending: false })
         .limit(10);
-      setActivities(actsData || []);
+      setActivities(actsData?.map(fromSnakeCase) || []);
+
+      // Buscar Folhas de Pagamento
+      const { data: payrollsData } = await supabase
+        .from('payrolls')
+        .select('*')
+        .eq('user_id', currentUserId);
+      setPayrolls(payrollsData?.map(fromSnakeCase) || []);
+
       
     } catch (err) {
+
       console.error('Erro ao carregar dados do Supabase:', err);
     }
   };
@@ -115,8 +140,9 @@ export const DataProvider = ({ children }) => {
     
     if (error) {
       console.error('Erro ao adicionar empresa:', error);
-      alert('Erro ao cadastrar empresa: ' + error.message);
+      showNotification('Erro ao cadastrar empresa: ' + error.message, 'error');
     } else {
+
       await logActivity('COMPANY', `Empresa ${company.name} foi cadastrada.`);
       fetchData();
     }
@@ -152,14 +178,22 @@ export const DataProvider = ({ children }) => {
 
   const deleteUser = async (id) => {
     const { error } = await supabase.from('users').delete().eq('id', id);
-    if (!error) fetchData();
+    if (error) {
+      console.error('Erro ao excluir usuário:', error);
+      showNotification('Erro ao excluir usuário: ' + error.message, 'error');
+    } else {
+
+      fetchData();
+    }
   }
+
 
   const addEmployee = async (employee) => {
     if (!currentUserId) return;
     
     const dataToSave = {
       name: employee.name,
+      cpf: employee.cpf,
       company_id: employee.companyId,
       role: employee.role,
       salary: employee.salary,
@@ -167,14 +201,16 @@ export const DataProvider = ({ children }) => {
       user_id: currentUserId
     };
 
+
     console.log('Enviando funcionário para Supabase:', dataToSave);
     
     const { error } = await supabase.from('employees').insert([dataToSave]);
     
     if (error) {
       console.error('Erro ao adicionar funcionário:', error);
-      alert('Erro ao cadastrar funcionário: ' + error.message);
+      showNotification('Erro ao cadastrar funcionário: ' + error.message, 'error');
     } else {
+
       await logActivity('HR', `Novo funcionário ${employee.name} cadastrado.`);
       fetchData();
     }
@@ -228,8 +264,9 @@ export const DataProvider = ({ children }) => {
           return;
         }
       }
-      alert('Erro ao enviar documento: ' + error.message);
+      showNotification('Erro ao enviar documento: ' + error.message, 'error');
     } else {
+
       await logActivity('DOC', `Documento ${document.name} foi enviado.`);
       fetchData();
     }
@@ -245,14 +282,45 @@ export const DataProvider = ({ children }) => {
     }
   }
 
+  const addPayroll = async (payroll) => {
+    if (!currentUserId) return;
+    const dataToSave = {
+      company_id: payroll.companyId,
+      company_name: payroll.companyName,
+      month: payroll.month,
+      status: payroll.status,
+      total_value: payroll.totalValue,
+      user_id: currentUserId
+    };
+
+    const { error } = await supabase.from('payrolls').insert([dataToSave]);
+    if (error) {
+      console.error('Erro ao adicionar folha:', error);
+      showNotification('Erro ao salvar folha de pagamento: ' + error.message, 'error');
+    } else {
+      await logActivity('PAYROLL', `Folha de pagamento da empresa ${payroll.companyName} registrada.`);
+      fetchData();
+    }
+  }
+
+  const updatePayrollStatus = async (id, newStatus) => {
+    const { error } = await supabase.from('payrolls').update({ status: newStatus }).eq('id', id);
+    if (!error) fetchData();
+    else showNotification('Erro ao atualizar status: ' + error.message, 'error');
+  }
+
+
+
   return (
     <DataContext.Provider value={{ 
       companies, addCompany, updateCompany, deleteCompany,
       appUsers, addUser, updateUser, deleteUser,
       employees, addEmployee, updateEmployee, deleteEmployee,
       documents, addDocument, deleteDocument,
-      payrolls, activities
+      payrolls, addPayroll, updatePayrollStatus,
+      activities
     }}>
+
       {children}
     </DataContext.Provider>
   );

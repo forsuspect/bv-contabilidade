@@ -1,11 +1,13 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { supabase } from '../lib/supabaseClient';
+import { useNotification } from './NotificationContext';
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const { showNotification } = useNotification();
 
   useEffect(() => {
     const savedUser = localStorage.getItem('bv_user');
@@ -39,7 +41,8 @@ export const AuthProvider = ({ children }) => {
         setUser(data);
         return data;
       } else {
-        throw new Error('Atenção: Usuário ou senha incorretos.');
+        showNotification('Usuário ou senha incorretos!', 'error');
+        return false;
       }
     } catch (err) {
       throw err;
@@ -68,9 +71,10 @@ export const AuthProvider = ({ children }) => {
         .eq('id', user.id);
 
       if (error) {
-        alert('Erro ao atualizar perfil: ' + error.message);
+        showNotification('Erro ao atualizar perfil: ' + error.message, 'error');
         throw error;
       }
+
     } catch (err) {
       console.error('Erro ao salvar no banco:', err);
     }

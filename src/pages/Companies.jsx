@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { useData } from '../context/DataContext';
+import { useNotification } from '../context/NotificationContext';
+
 import { 
   Plus, 
   Search, 
@@ -14,7 +16,9 @@ import styles from './Companies.module.css';
 
 const Companies = () => {
   const { companies, deleteCompany, addCompany } = useData();
+  const { showNotification } = useNotification();
   const [searchTerm, setSearchTerm] = useState('');
+
   const [filterRegime, setFilterRegime] = useState('ALL');
   const [showModal, setShowModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -61,10 +65,10 @@ const Companies = () => {
     
     // Validação de CNPJ (deve ter 18 caracteres com a máscara)
     if (formData.cnpj.length < 18) {
-      setErrorMsg('CNPJ Inválido! O número deve estar completo.');
-      setTimeout(() => setErrorMsg(''), 3000);
+      showNotification('CNPJ Inválido! O número deve estar completo.', 'error');
       return;
     }
+
 
       addCompany({
         ...formData,

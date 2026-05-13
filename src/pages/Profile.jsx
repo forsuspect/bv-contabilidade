@@ -1,11 +1,15 @@
 import React, { useState, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useNotification } from '../context/NotificationContext';
 import { Camera, User, Mail, Lock, CheckCircle, Upload, LogOut } from 'lucide-react';
+
 import styles from './Profile.module.css';
 
 const Profile = () => {
   const { user, updateProfile, logout } = useAuth();
+  const { showNotification } = useNotification();
   const fileInputRef = useRef(null);
+
   
   const [formData, setFormData] = useState({
     name: user?.name || '',
@@ -50,8 +54,7 @@ const Profile = () => {
       }
       
       updateProfile(updatedData);
-      setSuccessMsg('Perfil atualizado com sucesso!');
-      setTimeout(() => setSuccessMsg(''), 3000);
+      showNotification('Perfil atualizado com sucesso!', 'success');
       setFormData(prev => ({ ...prev, password: '' })); // Limpa campo de senha
     }
   };
@@ -93,12 +96,7 @@ const Profile = () => {
           </div>
 
           <form className={styles.form} onSubmit={handleSubmit}>
-            {successMsg && (
-              <div className={styles.successAlert}>
-                <CheckCircle size={20} />
-                <span>{successMsg}</span>
-              </div>
-            )}
+
 
             <div className={styles.formGroup}>
               <label>Nome Completo</label>
