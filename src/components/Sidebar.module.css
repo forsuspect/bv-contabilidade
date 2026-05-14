@@ -132,4 +132,8 @@
   .mobileOpen {
     transform: translateX(0);
   }
+
+  .hideOnMobile {
+    display: none !important;
+  }
 }

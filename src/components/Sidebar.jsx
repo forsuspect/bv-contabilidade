@@ -45,7 +45,7 @@ const Sidebar = ({ isCollapsed, setIsCollapsed, isMobileOpen, setIsMobileOpen })
           BV{!isCollapsed && <span>Contabilidade</span>}
         </div>
         <button 
-          className={styles.toggleBtn}
+          className={`${styles.toggleBtn} ${styles.hideOnMobile}`}
           onClick={() => setIsCollapsed(!isCollapsed)}
         >
           {isCollapsed ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
@@ -68,13 +68,6 @@ const Sidebar = ({ isCollapsed, setIsCollapsed, isMobileOpen, setIsMobileOpen })
           ))}
         </ul>
       </nav>
-
-      <div className={styles.footer}>
-        <button className={styles.logoutBtn} onClick={logout}>
-          <LogOut size={22} />
-          {!isCollapsed && <span>Sair do Sistema</span>}
-        </button>
-      </div>
     </aside>
   );
 };
