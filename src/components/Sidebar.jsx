@@ -31,10 +31,8 @@ const Sidebar = ({ isCollapsed, setIsCollapsed, isMobileOpen, setIsMobileOpen })
   const isExternal = user?.role === 'CLIENTE_EXTERNO';
 
   const filteredItems = menuItems.filter(item => {
-    if (isExternal) return item.path === '/cost-control' || item.path === '/profile' || item.path === '/calendar';
+    if (isExternal) return item.path === '/cost-control' || item.path === '/profile';
     if (item.adminOnly && !isAdmin) return false;
-    // Opcional: ocultar controle de custo para admin se for apenas para o cliente
-    // if (item.externalOnly && !isExternal) return false; 
     return true;
   });
 
