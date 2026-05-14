@@ -923,3 +923,21 @@
     max-height: 95vh;
   }
 }
+
+.selectFieldWrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.selectFieldWrapper select {
+  appearance: none;
+  padding-right: 2.5rem !important;
+}
+
+.selectIcon {
+  position: absolute;
+  right: 1rem;
+  color: var(--text-muted);
+  pointer-events: none;
+}

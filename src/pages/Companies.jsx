@@ -365,11 +365,14 @@ const Companies = () => {
                 </div>
                 <div className={styles.formGroup}>
                   <label>Regime Tributário *</label>
-                  <select value={formData.regime} onChange={e => setFormData({...formData, regime: e.target.value})}>
-                    <option value="SIMPLES_NACIONAL">Simples Nacional</option>
-                    <option value="LUCRO_PRESUMIDO">Lucro Presumido</option>
-                    <option value="LUCRO_REAL">Lucro Real</option>
-                  </select>
+                  <div className={styles.selectFieldWrapper}>
+                    <select required value={formData.regime} onChange={e => setFormData({...formData, regime: e.target.value})}>
+                      <option value="SIMPLES_NACIONAL">Simples Nacional</option>
+                      <option value="LUCRO_PRESUMIDO">Lucro Presumido</option>
+                      <option value="LUCRO_REAL">Lucro Real</option>
+                    </select>
+                    <ChevronDown size={18} className={styles.selectIcon} />
+                  </div>
                 </div>
               </div>
               <div className={styles.modalFooter}>
