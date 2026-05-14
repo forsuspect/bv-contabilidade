@@ -73,8 +73,8 @@ const ObligationsCalendar = () => {
             <div className={styles.legendItem}><span className={`${styles.legendDot} ${styles.late}`} /> Em atraso</div>
           </div>
 
-          <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-            <Filter size={16} style={{ position: 'absolute', left: '12px', color: '#64748b' }} />
+          <div className={styles.companySelectWrapper}>
+            <Filter size={16} className={styles.filterIcon} />
             <select 
               value={filterCompany} 
               onChange={(e) => { setFilterCompany(e.target.value); setSelectedDay(null); }}
