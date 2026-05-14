@@ -184,6 +184,11 @@ export const DataProvider = ({ children }) => {
       fantasy_name: company.fantasyName,
       cnpj: company.cnpj,
       regime: company.regime,
+      email: company.email,
+      phone: company.phone,
+      uf: company.uf,
+      city: company.city,
+      state_registration: company.stateRegistration,
       status: company.status || 'ACTIVE',
       estimated_tax: company.estimatedTax || 0,
       user_id: currentUserId

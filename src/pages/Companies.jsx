@@ -270,9 +270,13 @@ const Companies = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [companyToDelete, setCompanyToDelete] = useState(null);
   const [selectedCompany, setSelectedCompany] = useState(null);
-  const [formData, setFormData] = useState({ name: '', fantasyName: '', cnpj: '', regime: 'SIMPLES_NACIONAL' });
+  const [formData, setFormData] = useState({ 
+    name: '', fantasyName: '', cnpj: '', regime: 'SIMPLES_NACIONAL',
+    email: '', phone: '', uf: '', city: '', stateRegistration: ''
+  });
 
   const maskCNPJ = (v) => v.replace(/\D/g, '').replace(/^(\d{2})(\d)/, '$1.$2').replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3').replace(/\.(\d{3})(\d)/, '.$1/$2').replace(/(\d{4})(\d)/, '$1-$2').slice(0, 18);
+  const maskPhone = (v) => v.replace(/\D/g, '').replace(/^(\d{2})(\d)/, '($1) $2').replace(/(\d{5})(\d)/, '$1-$2').slice(0, 15);
   const filtered = (companies || []).filter(c => (c.name?.toLowerCase().includes(searchTerm.toLowerCase()) || c.cnpj?.includes(searchTerm)) && (filterRegime === 'ALL' || c.regime === filterRegime));
 
   return (
@@ -306,6 +310,7 @@ const Companies = () => {
             <div className={styles.cardBody}>
               <div className={styles.infoRow}><span>Regime</span><span className={styles.badge}>{c.regime?.replace('_',' ')}</span></div>
               <div className={styles.infoRow}><span>Status</span><span className={styles.statusActive}>Regular</span></div>
+              {c.city && <div className={styles.infoRow}><span>Local</span><small>{c.city} - {c.uf}</small></div>}
             </div>
             <div className={styles.cardFooter}>
               <button className={styles.actionBtn} onClick={() => setSelectedCompany(c)}><Calendar size={16} /> Obrigações</button>
@@ -319,17 +324,58 @@ const Companies = () => {
 
       {showModal && (
         <div className={styles.modalOverlay}>
-          <div className={styles.modalCardForm}>
-            <div className={styles.modalHeader}><h3>Cadastrar Empresa</h3><button onClick={() => setShowModal(false)}><X size={20} /></button></div>
-            <form className={styles.form} onSubmit={e => { e.preventDefault(); addCompany({...formData, status:'ACTIVE'}); setShowModal(false); toast('Empresa cadastrada!', 'success'); }}>
-              <input required placeholder="Razão Social" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
-              <input required placeholder="CNPJ" value={formData.cnpj} onChange={e => setFormData({...formData, cnpj: maskCNPJ(e.target.value)})} maxLength="18" />
-              <select value={formData.regime} onChange={e => setFormData({...formData, regime: e.target.value})}>
-                <option value="SIMPLES_NACIONAL">Simples Nacional</option>
-                <option value="LUCRO_PRESUMIDO">Lucro Presumido</option>
-                <option value="LUCRO_REAL">Lucro Real</option>
-              </select>
-              <button type="submit" className={styles.saveBtn}>Cadastrar</button>
+          <div className={styles.modalCardLarge}>
+            <div className={styles.modalHeader}>
+              <h3>Cadastrar Empresa</h3>
+              <button className={styles.closeBtn} onClick={() => setShowModal(false)}><X size={20} /></button>
+            </div>
+            <form className={styles.formMulti} onSubmit={e => { e.preventDefault(); addCompany({...formData, status:'ACTIVE'}); setShowModal(false); toast('Empresa cadastrada!', 'success'); }}>
+              <div className={styles.formGrid}>
+                <div className={styles.formGroup}>
+                  <label>CNPJ *</label>
+                  <input required placeholder="00.000.000/0000-00" value={formData.cnpj} onChange={e => setFormData({...formData, cnpj: maskCNPJ(e.target.value)})} maxLength="18" />
+                </div>
+                <div className={styles.formGroup}>
+                  <label>Razão Social *</label>
+                  <input required placeholder="Razão Social" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} />
+                </div>
+                <div className={styles.formGroup}>
+                  <label>Nome Fantasia</label>
+                  <input placeholder="Nome Fantasia" value={formData.fantasyName} onChange={e => setFormData({...formData, fantasyName: e.target.value})} />
+                </div>
+                <div className={styles.formGroup}>
+                  <label>E-mail</label>
+                  <input type="email" placeholder="contato@empresa.com" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
+                </div>
+                <div className={styles.formGroup}>
+                  <label>Telefone</label>
+                  <input placeholder="(00) 00000-0000" value={formData.phone} onChange={e => setFormData({...formData, phone: maskPhone(e.target.value)})} maxLength="15" />
+                </div>
+                <div className={styles.formGroup}>
+                  <label>UF *</label>
+                  <input required placeholder="EX: SP" maxLength="2" value={formData.uf} onChange={e => setFormData({...formData, uf: e.target.value.toUpperCase()})} />
+                </div>
+                <div className={styles.formGroup}>
+                  <label>Município *</label>
+                  <input required placeholder="Nome da cidade" value={formData.city} onChange={e => setFormData({...formData, city: e.target.value})} />
+                </div>
+                <div className={styles.formGroup}>
+                  <label>Inscrição Estadual</label>
+                  <input placeholder="000.000.000.000" value={formData.stateRegistration} onChange={e => setFormData({...formData, stateRegistration: e.target.value})} />
+                </div>
+                <div className={styles.formGroup}>
+                  <label>Regime Tributário *</label>
+                  <select value={formData.regime} onChange={e => setFormData({...formData, regime: e.target.value})}>
+                    <option value="SIMPLES_NACIONAL">Simples Nacional</option>
+                    <option value="LUCRO_PRESUMIDO">Lucro Presumido</option>
+                    <option value="LUCRO_REAL">Lucro Real</option>
+                  </select>
+                </div>
+              </div>
+              <div className={styles.modalFooter}>
+                <button type="button" className={styles.cancelBtn} onClick={() => setShowModal(false)}>Cancelar</button>
+                <button type="submit" className={styles.saveBtn}>Cadastrar Empresa</button>
+              </div>
             </form>
           </div>
         </div>
