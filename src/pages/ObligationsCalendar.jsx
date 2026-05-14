@@ -104,8 +104,9 @@ const ObligationsCalendar = () => {
             return (
               <div 
                 key={i} 
-                className={`${styles.cell} ${!day ? styles.empty : ''} ${isToday ? styles.today : ''} ${obs ? styles.hasObs : ''}`}
-                onClick={() => day && obs && setSelectedDay(day)}
+                className={`${styles.cell} ${!day ? styles.empty : ''} ${isToday ? styles.today : ''}`}
+                onClick={() => day && setSelectedDay(day)}
+                style={{ cursor: day ? 'pointer' : 'default' }}
               >
                 {day && (
                   <>
@@ -120,35 +121,44 @@ const ObligationsCalendar = () => {
       </div>
 
       {/* Modal de Detalhes do Dia */}
-      {selectedDayObs && (
+      {selectedDay && (
         <div className={styles.modalOverlay} onClick={() => setSelectedDay(null)}>
           <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
             <div className={styles.modalHeader}>
               <div>
                 <h3 className={styles.modalTitle}>Dia {selectedDay} de {MONTH_NAMES[month + 1]}</h3>
-                <p className={styles.modalSubtitle}>{selectedDayObs.length} pendência(s) encontrada(s)</p>
+                <p className={styles.modalSubtitle}>
+                  {selectedDayObs ? `${selectedDayObs.length} pendência(s) encontrada(s)` : 'Sem pendências registradas'}
+                </p>
               </div>
               <button className={styles.closeBtn} onClick={() => setSelectedDay(null)}><X size={20} /></button>
             </div>
             <div className={styles.modalBody}>
-              {selectedDayObs.map(ob => {
-                const co = companies.find(c => c.id === ob.companyId);
-                const isLate = ob.day < today.getDate() && (ob.month === 0 || ob.month === today.getMonth() + 1);
-                return (
-                  <div key={ob.id} className={styles.detailCard}>
-                    <div className={`${styles.statusIndicator} ${ob.status === 'PAID' ? styles.bgPaid : (isLate ? styles.bgLate : styles.bgPending)}`}>
-                      {ob.status === 'PAID' ? <CheckCircle size={18} /> : (isLate ? <AlertCircle size={18} /> : <Clock size={18} />)}
+              {selectedDayObs && selectedDayObs.length > 0 ? (
+                selectedDayObs.map(ob => {
+                  const co = companies.find(c => c.id === ob.companyId);
+                  const isLate = ob.day < today.getDate() && (ob.month === 0 || ob.month === today.getMonth() + 1);
+                  return (
+                    <div key={ob.id} className={styles.detailCard}>
+                      <div className={`${styles.statusIndicator} ${ob.status === 'PAID' ? styles.bgPaid : (isLate ? styles.bgLate : styles.bgPending)}`}>
+                        {ob.status === 'PAID' ? <CheckCircle size={18} /> : (isLate ? <AlertCircle size={18} /> : <Clock size={18} />)}
+                      </div>
+                      <div className={styles.detailInfo}>
+                        <div className={styles.detailName}>{ob.name}</div>
+                        <div className={styles.detailCompany}><Building2 size={12} /> {co?.name || 'Empresa'}</div>
+                      </div>
                     </div>
-                    <div className={styles.detailInfo}>
-                      <div className={styles.detailName}>{ob.name}</div>
-                      <div className={styles.detailCompany}><Building2 size={12} /> {co?.name || 'Empresa'}</div>
-                    </div>
-                    <div className={`${styles.statusBadge} ${ob.status === 'PAID' ? styles.textPaid : (isLate ? styles.textLate : styles.textPending)}`}>
-                      {ob.status === 'PAID' ? 'Pago' : (isLate ? 'Em atraso' : 'A vencer')}
-                    </div>
+                  );
+                })
+              ) : (
+                <div style={{ textAlign: 'center', padding: '2rem 1rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+                  <div style={{ background: '#ecfdf5', color: '#10b981', padding: '1rem', borderRadius: '50%' }}>
+                    <CheckCircle size={32} />
                   </div>
-                );
-              })}
+                  <div style={{ fontWeight: 700, color: '#1e293b' }}>Tudo limpo por aqui!</div>
+                  <div style={{ fontSize: '0.875rem', color: '#64748b' }}>Nenhuma obrigação agendada para este dia.</div>
+                </div>
+              )}
             </div>
           </div>
         </div>
