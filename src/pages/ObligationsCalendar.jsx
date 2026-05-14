@@ -62,7 +62,7 @@ const ObligationsCalendar = () => {
     <div className={styles.container}>
       <header className={styles.header}>
         <h1 className={styles.title}>Calendário de Obrigações</h1>
-        <p className={styles.subtitle}>Gestão interativa de pendências</p>
+        <p className={styles.subtitle}>Gestão unificada de pendências</p>
       </header>
 
       <div className={styles.calendarCard}>
@@ -78,16 +78,7 @@ const ObligationsCalendar = () => {
             <select 
               value={filterCompany} 
               onChange={(e) => { setFilterCompany(e.target.value); setSelectedDay(null); }}
-              style={{ 
-                padding: '0.5rem 1rem 0.5rem 2.5rem', 
-                borderRadius: '8px', 
-                border: '1px solid #e2e8f0', 
-                fontSize: '0.875rem', 
-                fontWeight: 600,
-                color: '#1e293b',
-                background: '#f8fafc',
-                cursor: 'pointer'
-              }}
+              className={styles.companySelect}
             >
               <option value="ALL">Todas as Empresas</option>
               {companies.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -109,14 +100,12 @@ const ObligationsCalendar = () => {
             const isToday = day && today.getDate() === day && today.getMonth() === month && today.getFullYear() === year;
             const obs = day && dayMap[day];
             const status = obs ? getDayStatus(obs) : null;
-            const isSelected = selectedDay === day;
             
             return (
               <div 
                 key={i} 
-                className={`${styles.cell} ${!day ? styles.empty : ''} ${isToday ? styles.today : ''} ${isSelected ? styles.selectedCell : ''}`}
+                className={`${styles.cell} ${!day ? styles.empty : ''} ${isToday ? styles.today : ''} ${obs ? styles.hasObs : ''}`}
                 onClick={() => day && obs && setSelectedDay(day)}
-                style={{ cursor: day && obs ? 'pointer' : 'default' }}
               >
                 {day && (
                   <>
@@ -130,58 +119,66 @@ const ObligationsCalendar = () => {
         </div>
       </div>
 
+      {/* Modal de Detalhes do Dia */}
       {selectedDayObs && (
-        <div style={{ marginTop: '2rem', animation: 'slideUp 0.3s ease' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-            <h3 className={styles.upcomingTitle}>Obrigações do Dia {selectedDay}</h3>
-            <button onClick={() => setSelectedDay(null)} style={{ background: '#f1f5f9', border: 'none', padding: '4px', borderRadius: '50%', cursor: 'pointer' }}><X size={18} /></button>
-          </div>
-          <div className={styles.upcomingGrid}>
-            {selectedDayObs.map(ob => {
-              const co = companies.find(c => c.id === ob.companyId);
-              return (
-                <div key={ob.id} className={styles.upcomingCard} style={{ borderLeft: `4px solid ${ob.status === 'PAID' ? '#10b981' : (ob.day < today.getDate() ? '#ef4444' : '#f59e0b')}` }}>
-                  <div className={styles.upcomingIcon}>
-                    {ob.status === 'PAID' ? <CheckCircle size={20} color="#10b981" /> : (ob.day < today.getDate() ? <AlertCircle size={20} color="#ef4444" /> : <Clock size={20} />)}
+        <div className={styles.modalOverlay} onClick={() => setSelectedDay(null)}>
+          <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
+            <div className={styles.modalHeader}>
+              <div>
+                <h3 className={styles.modalTitle}>Dia {selectedDay} de {MONTH_NAMES[month + 1]}</h3>
+                <p className={styles.modalSubtitle}>{selectedDayObs.length} pendência(s) encontrada(s)</p>
+              </div>
+              <button className={styles.closeBtn} onClick={() => setSelectedDay(null)}><X size={20} /></button>
+            </div>
+            <div className={styles.modalBody}>
+              {selectedDayObs.map(ob => {
+                const co = companies.find(c => c.id === ob.companyId);
+                const isLate = ob.day < today.getDate() && (ob.month === 0 || ob.month === today.getMonth() + 1);
+                return (
+                  <div key={ob.id} className={styles.detailCard}>
+                    <div className={`${styles.statusIndicator} ${ob.status === 'PAID' ? styles.bgPaid : (isLate ? styles.bgLate : styles.bgPending)}`}>
+                      {ob.status === 'PAID' ? <CheckCircle size={18} /> : (isLate ? <AlertCircle size={18} /> : <Clock size={18} />)}
+                    </div>
+                    <div className={styles.detailInfo}>
+                      <div className={styles.detailName}>{ob.name}</div>
+                      <div className={styles.detailCompany}><Building2 size={12} /> {co?.name || 'Empresa'}</div>
+                    </div>
+                    <div className={`${styles.statusBadge} ${ob.status === 'PAID' ? styles.textPaid : (isLate ? styles.textLate : styles.textPending)}`}>
+                      {ob.status === 'PAID' ? 'Pago' : (isLate ? 'Em atraso' : 'A vencer')}
+                    </div>
                   </div>
-                  <div className={styles.upcomingInfo}>
-                    <h4>{ob.name}</h4>
-                    <p>{co?.name || 'Empresa'} • {ob.status === 'PAID' ? 'Pago' : 'Pendente'}</p>
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         </div>
       )}
 
-      {!selectedDay && (
-        <div className={styles.upcoming}>
-          <h3 className={styles.upcomingTitle}>Próximos Vencimentos</h3>
-          <div className={styles.upcomingGrid}>
-            {filteredObligations
-              .filter(ob => {
-                const d = Number(ob.day);
-                return (ob.month === 0 || ob.month === month + 1) && d >= today.getDate() && ob.status !== 'PAID';
-              })
-              .sort((a, b) => a.day - b.day)
-              .slice(0, 6)
-              .map(ob => {
-                const co = companies.find(c => c.id === ob.companyId);
-                return (
-                  <div key={ob.id} className={styles.upcomingCard}>
-                    <div className={styles.upcomingIcon}><Clock size={20} /></div>
-                    <div className={styles.upcomingInfo}>
-                      <h4>{ob.name}</h4>
-                      <p>{co?.name || 'Empresa'} • Dia {ob.day}</p>
-                    </div>
+      <div className={styles.upcoming}>
+        <h3 className={styles.upcomingTitle}>Resumo de Vencimentos</h3>
+        <div className={styles.upcomingGrid}>
+          {filteredObligations
+            .filter(ob => {
+              const d = Number(ob.day);
+              return (ob.month === 0 || ob.month === month + 1) && d >= today.getDate() && ob.status !== 'PAID';
+            })
+            .sort((a, b) => a.day - b.day)
+            .slice(0, 3)
+            .map(ob => {
+              const co = companies.find(c => c.id === ob.companyId);
+              return (
+                <div key={ob.id} className={styles.upcomingCard}>
+                  <div className={styles.upcomingIcon}><Clock size={20} /></div>
+                  <div className={styles.upcomingInfo}>
+                    <h4>{ob.name}</h4>
+                    <p>{co?.name || 'Empresa'} • Dia {ob.day}</p>
                   </div>
-                );
-              })
-            }
-          </div>
+                </div>
+              );
+            })
+          }
         </div>
-      )}
+      </div>
     </div>
   );
 };
