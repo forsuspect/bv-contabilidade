@@ -139,13 +139,19 @@ const ObligationsPanel = ({ company, onClose }) => {
         </div>
 
         <div className={styles.obligationsTabs}>
-          {['calendario', 'fiscal', 'labor', 'apuracao'].map(tab => (
-            <button key={tab} className={`${styles.obTab} ${activeTab === tab ? styles.obTabActive : ''}`} onClick={() => { setActiveTab(tab); setShowAddForm(false); }}>
-              {tab === 'calendario' && <Calendar size={15} />}
-              {tab === 'fiscal' && <FileText size={15} />}
-              {tab === 'labor' && <AlertTriangle size={15} />}
-              {tab === 'apuracao' && <CheckCircle size={15} />}
-              {tab.charAt(0).toUpperCase() + tab.slice(1)}
+          {[
+            { id: 'calendario', label: 'Calendário', icon: <Calendar size={16} /> },
+            { id: 'fiscal', label: 'Fiscais', icon: <FileText size={16} /> },
+            { id: 'labor', label: 'Trabalhistas', icon: <AlertTriangle size={16} /> },
+            { id: 'apuracao', label: 'Apuração', icon: <CheckCircle size={16} /> }
+          ].map(tab => (
+            <button 
+              key={tab.id} 
+              className={`${styles.obTab} ${activeTab === tab.id ? styles.obTabActive : ''}`} 
+              onClick={() => { setActiveTab(tab.id); setShowAddForm(false); }}
+            >
+              {tab.icon}
+              {tab.label}
             </button>
           ))}
         </div>

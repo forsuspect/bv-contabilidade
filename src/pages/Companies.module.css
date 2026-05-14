@@ -531,12 +531,15 @@
 .obTabActive {
   color: #111827;
   border-bottom-color: #111827;
+  background-color: white;
+  border-bottom-width: 4px;
 }
 
 .obligationsBody {
   display: flex;
   flex: 1;
   overflow: hidden;
+  min-height: 550px;
 }
 
 .obligationsLeft {
