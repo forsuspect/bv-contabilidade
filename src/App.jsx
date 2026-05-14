@@ -4,6 +4,7 @@ import { useAuth } from './context/AuthContext';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Companies from './pages/Companies';
+import ObligationsCalendar from './pages/ObligationsCalendar';
 import Users from './pages/Users';
 import Documents from './pages/Documents';
 import Payroll from './pages/Payroll';
@@ -28,6 +29,7 @@ function App() {
         <Route path="/" element={user ? <Layout /> : <Navigate to="/login" />}>
           <Route index element={isExternal ? <Navigate to="/cost-control" /> : <Dashboard />} />
           <Route path="companies" element={isExternal ? <Navigate to="/cost-control" /> : <Companies />} />
+          <Route path="calendar" element={isExternal ? <Navigate to="/cost-control" /> : <ObligationsCalendar />} />
           <Route path="users" element={isExternal ? <Navigate to="/cost-control" /> : <Users />} />
           <Route path="documents" element={isExternal ? <Navigate to="/cost-control" /> : <Documents />} />
           <Route path="payroll" element={isExternal ? <Navigate to="/cost-control" /> : <Payroll />} />

@@ -92,7 +92,7 @@ const MiniCalendar = ({ obligations }) => {
 
 const ObligationsPanel = ({ company, onClose }) => {
   const { obligations: allDbObligations, addObligation, deleteObligation, toggleObligationStatus, apurations: allDbApurations, addApuracao } = useData();
-  const [activeTab, setActiveTab] = useState('calendario');
+  const [activeTab, setActiveTab] = useState('fiscal');
   const [showAddForm, setShowAddForm] = useState(false);
   const [addForm, setAddForm] = useState({ name: '', day: '', month: '0' });
   const [apuracaoForm, setApuracaoForm] = useState({ faturamento: '', imposto: '', mes: new Date().getMonth() + 1, ano: new Date().getFullYear() });
@@ -126,8 +126,8 @@ const ObligationsPanel = ({ company, onClose }) => {
     toast('Apuração confirmada!', 'success');
   };
 
-  const tabCustomObs = companyCustomObs.filter(ob => ob.type === activeTab || (activeTab === 'calendario' && (ob.type === 'fiscal' || ob.type === 'labor')));
-  const defaultList = (activeTab === 'fiscal' || activeTab === 'calendario') ? (DEFAULT_FISCAL[regime] || []) : (activeTab === 'labor' ? DEFAULT_LABOR : []);
+  const tabCustomObs = companyCustomObs.filter(ob => ob.type === activeTab);
+  const defaultList = (activeTab === 'fiscal') ? (DEFAULT_FISCAL[regime] || []) : (activeTab === 'labor' ? DEFAULT_LABOR : []);
   const allObs = [...defaultList, ...tabCustomObs];
 
   return (
@@ -140,7 +140,6 @@ const ObligationsPanel = ({ company, onClose }) => {
 
         <div className={styles.obligationsTabs}>
           {[
-            { id: 'calendario', label: 'Calendário', icon: <Calendar size={16} /> },
             { id: 'fiscal', label: 'Fiscais', icon: <FileText size={16} /> },
             { id: 'labor', label: 'Trabalhistas', icon: <AlertTriangle size={16} /> },
             { id: 'apuracao', label: 'Apuração', icon: <CheckCircle size={16} /> }
@@ -157,10 +156,6 @@ const ObligationsPanel = ({ company, onClose }) => {
         </div>
 
         <div className={styles.obligationsBody}>
-          {activeTab === 'calendario' && (
-            <div className={styles.calendarFullWidth}><MiniCalendar obligations={allObs} /></div>
-          )}
-
           {(activeTab === 'fiscal' || activeTab === 'labor') && (
             <div className={styles.obligationsFullList}>
               <div className={styles.obListHeader}>
