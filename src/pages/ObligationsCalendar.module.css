@@ -367,59 +367,63 @@
   }
 
   .calendarCard {
-    padding: 0.75rem;
-    border-radius: 0.75rem;
+    padding: 0.5rem;
+    border-radius: 0.6rem;
+    overflow: hidden;
   }
 
   .legend {
-    gap: 0.5rem;
-    margin-bottom: 1rem;
+    gap: 0.4rem;
+    margin-bottom: 0.75rem;
+    padding: 0 0.25rem;
   }
 
   .legendItem {
-    font-size: 0.6rem;
+    font-size: 0.55rem;
   }
 
   .companySelect {
     width: 100%;
     margin-top: 0.5rem;
-    padding: 0.4rem 0.75rem 0.4rem 2rem;
-    font-size: 0.8rem;
+    padding: 0.35rem 0.6rem 0.35rem 1.8rem;
+    font-size: 0.75rem;
+    border-radius: 8px;
   }
 
   .nav {
-    padding: 0.4rem 0.75rem;
-    margin-bottom: 0.75rem;
+    padding: 0.35rem 0.5rem;
+    margin-bottom: 0.5rem;
+    border-radius: 8px;
   }
 
   .monthLabel {
-    font-size: 0.85rem;
+    font-size: 0.8rem;
   }
 
   .grid {
-    gap: 3px;
+    gap: 2px;
     grid-template-columns: repeat(7, minmax(0, 1fr));
   }
 
   .dayLabel {
-    font-size: 0.55rem;
-    padding-bottom: 0.25rem;
+    font-size: 0.5rem;
+    padding-bottom: 0.2rem;
   }
 
   .cell {
     aspect-ratio: 1;
-    min-height: 38px;
-    border-radius: 0.35rem;
-    padding: 2px;
+    min-height: 32px;
+    border-radius: 0.25rem;
+    padding: 1px;
   }
 
   .dayNumber {
-    font-size: 0.7rem;
+    font-size: 0.65rem;
   }
 
   .statusDot {
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
     margin-top: 1px;
   }
 

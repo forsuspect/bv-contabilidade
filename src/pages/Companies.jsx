@@ -349,7 +349,7 @@ const generateCompanyReport = (company, obligations, apurations) => {
       doc.text(`BV Contabilidade | Relatório Estratégico de Gestão | Página ${i} de ${pageCount}`, pageWidth / 2, 285, { align: 'center' });
     }
 
-    doc.save(`Relatorio_Premium_BV_${company.name?.replace(/\s/g, '_')}.pdf`);
+    doc.save(`BV_Relatorio_Premium_${company.name?.replace(/\s/g, '_')}_${new Date().getTime()}.pdf`);
     toast('Relatório Premium gerado!', 'success');
   } catch (error) {
     console.error('Erro PDF:', error);
