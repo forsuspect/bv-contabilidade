@@ -240,8 +240,12 @@ const generateCompanyReport = (company, obligations, apurations) => {
     const imgWidth = 45;
     const imgHeight = 45;
     const xPos = (pageWidth - imgWidth) / 2;
-    // Tenta carregar a logo da pasta public
-    doc.addImage('/bvlogo.png', 'PNG', xPos, 15, imgWidth, imgHeight);
+    
+    try {
+      doc.addImage('/bv-logo.png', 'PNG', xPos, 10, imgWidth, imgHeight);
+    } catch (e) {
+      console.warn('Logo não encontrada ou falha ao carregar:', e);
+    }
 
     // 2. Título do Relatório
     doc.setFontSize(22);
