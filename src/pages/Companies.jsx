@@ -234,71 +234,112 @@ const generateCompanyReport = (company, obligations, apurations) => {
   try {
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
+    const margin = 20;
     
-    // Header
-    doc.setFillColor(15, 23, 42);
-    doc.rect(0, 0, pageWidth, 50, 'F');
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(26); doc.setFont('helvetica', 'bold');
-    doc.text('BV CONTABILIDADE', 20, 25);
-    doc.setFontSize(10); doc.setFont('helvetica', 'normal');
-    doc.setTextColor(148, 163, 184);
-    doc.text('RELATÓRIO CONSOLIDADO DE GESTÃO', 20, 33);
-    doc.setTextColor(255, 255, 255);
-    doc.text(new Date().toLocaleDateString('pt-BR'), pageWidth - 20, 25, { align: 'right' });
+    // 1. Logo Centralizada (Top)
+    const imgWidth = 45;
+    const imgHeight = 45;
+    const xPos = (pageWidth - imgWidth) / 2;
+    // Tenta carregar a logo da pasta public
+    doc.addImage('/bvlogo.png', 'PNG', xPos, 15, imgWidth, imgHeight);
 
-    // Company Data Section
+    // 2. Título do Relatório
+    doc.setFontSize(22);
+    doc.setFont('helvetica', 'bold');
     doc.setTextColor(15, 23, 42);
-    doc.setFontSize(16); doc.text(company.name?.toUpperCase() || 'EMPRESA', 20, 65);
-    doc.setFontSize(9); doc.setFont('helvetica', 'bold');
-    doc.text('DADOS CADASTRAIS:', 20, 75);
-    doc.setFont('helvetica', 'normal');
+    doc.text('Relatório de Gestão Empresarial', pageWidth / 2, 72, { align: 'center' });
     
-    const companyData = [
-      [`Razão Social: ${company.name || '-'}`, `CNPJ: ${company.cnpj || '-'}`],
-      [`Nome Fantasia: ${company.fantasyName || '-'}`, `Inscrição Estadual: ${company.stateRegistration || '-'}`],
-      [`E-mail: ${company.email || '-'}`, `Telefone: ${company.phone || '-'}`],
-      [`Cidade/UF: ${company.city || '-'}/${company.uf || '-'}`, `Regime: ${company.regime?.replace(/_/g, ' ') || '-'}`]
-    ];
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(100);
+    doc.text(`Período de Referência: ${new Date().getFullYear()}`, pageWidth / 2, 79, { align: 'center' });
 
-    autoTable(doc, {
-      startY: 78, margin: { left: 20 },
-      body: companyData,
-      theme: 'plain',
-      styles: { fontSize: 8, cellPadding: 1 },
-      columnStyles: { 0: { cellWidth: 80 }, 1: { cellWidth: 80 } }
-    });
+    // Linha de Separação
+    doc.setDrawColor(241, 245, 249);
+    doc.line(margin, 88, pageWidth - margin, 88);
 
-    const summaryY = doc.lastAutoTable.finalY + 10;
+    // 3. Dados da Empresa (Cards Estilizados)
+    doc.setFontSize(13);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(15, 23, 42);
+    doc.text('DADOS DA EMPRESA', margin, 100);
+
+    const infoY = 110;
+    doc.setFontSize(8);
+    doc.setTextColor(148, 163, 184);
+    doc.text('RAZÃO SOCIAL', margin, infoY);
+    doc.text('CNPJ', margin + 90, infoY);
+
+    doc.setFontSize(10);
+    doc.setTextColor(30);
+    doc.setFont('helvetica', 'bold');
+    doc.text(company.name?.toUpperCase() || '-', margin, infoY + 6);
+    doc.text(company.cnpj || '-', margin + 90, infoY + 6);
+
+    const infoY2 = 125;
+    doc.setFontSize(8);
+    doc.setTextColor(148, 163, 184);
+    doc.setFont('helvetica', 'normal');
+    doc.text('REGIME TRIBUTÁRIO', margin, infoY2);
+    doc.text('CONTATO', margin + 90, infoY2);
+
+    doc.setFontSize(10);
+    doc.setTextColor(30);
+    doc.setFont('helvetica', 'bold');
+    doc.text(company.regime?.replace('_', ' ') || '-', margin, infoY2 + 6);
+    doc.text(`${company.email || '-'} | ${company.phone || '-'}`, margin + 90, infoY2 + 6);
+
+    // 4. Resumo de Faturamento (Destaque)
     const totalFat = apurations.reduce((s, a) => s + Number(a.faturamento), 0);
     const totalImp = apurations.reduce((s, a) => s + Number(a.imposto), 0);
 
-    doc.setFillColor(248, 250, 252); doc.roundedRect(20, summaryY, pageWidth - 40, 25, 2, 2, 'F');
-    doc.setTextColor(71, 85, 105); doc.setFontSize(8);
-    doc.text('FATURAMENTO ACUMULADO', 25, summaryY + 8); doc.text('TOTAL IMPOSTOS APURADOS', pageWidth / 2, summaryY + 8);
-    doc.setTextColor(15, 23, 42); doc.setFontSize(12); doc.setFont('helvetica', 'bold');
-    doc.text(`R$ ${totalFat.toLocaleString('pt-BR')}`, 25, summaryY + 17); doc.text(`R$ ${totalImp.toLocaleString('pt-BR')}`, pageWidth / 2, summaryY + 17);
+    doc.setFillColor(15, 23, 42); // Navy Dark Background
+    doc.roundedRect(margin, 142, pageWidth - (margin * 2), 25, 3, 3, 'F');
+    
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(9); doc.setFont('helvetica', 'normal');
+    doc.text('FATURAMENTO TOTAL ACUMULADO', margin + 10, 152);
+    doc.text('TOTAL DE IMPOSTOS CALCULADOS', margin + 100, 152);
 
-    // Apurations Table
+    doc.setFontSize(14); doc.setFont('helvetica', 'bold');
+    doc.text(`R$ ${totalFat.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, margin + 10, 161);
+    doc.text(`R$ ${totalImp.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, margin + 100, 161);
+
+    // 5. Tabelas
+    doc.setFontSize(13);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(15, 23, 42);
+    doc.text('PENDÊNCIAS E OBRIGAÇÕES', margin, 185);
+
     autoTable(doc, {
-      startY: summaryY + 35, margin: { left: 20 },
-      head: [['MÊS/ANO', 'FATURAMENTO', 'IMPOSTO', 'STATUS']],
-      body: apurations.map(ap => [`${MONTH_NAMES[ap.mes]}/${ap.ano}`, `R$ ${ap.faturamento.toLocaleString('pt-BR')}`, `R$ ${ap.imposto.toLocaleString('pt-BR')}`, 'CONFIRMADO']),
-      theme: 'grid', headStyles: { fillColor: [15, 23, 42] }
+      startY: 190,
+      head: [['OBRIGAÇÃO', 'VENCIMENTO', 'STATUS']],
+      body: obligations.map(ob => [
+        ob.name.toUpperCase(), 
+        `DIA ${ob.day}${ob.month > 0 ? `/${ob.month}` : ' (MENSAL)'}`, 
+        ob.status === 'PAID' ? 'LIQUIDADO' : 'PENDENTE'
+      ]),
+      theme: 'grid',
+      headStyles: { fillColor: [15, 23, 42], textColor: [255, 255, 255], fontStyle: 'bold' },
+      styles: { fontSize: 8, cellPadding: 4 },
+      columnStyles: { 2: { fontStyle: 'bold' } }
     });
 
-    // Obligations Table
-    const obRows = obligations.map(ob => [ob.name.toUpperCase(), ob.type.toUpperCase(), `DIA ${ob.day}${ob.month > 0 ? `/${ob.month}` : ' (MENSAL)'}`, ob.status === 'PAID' ? 'PAGO' : 'PENDENTE']);
-    autoTable(doc, {
-      startY: doc.lastAutoTable.finalY + 15, margin: { left: 20 },
-      head: [['OBRIGAÇÃO', 'TIPO', 'VENCIMENTO', 'STATUS']],
-      body: obRows.length ? obRows : [['-', 'SEM OBRIGAÇÕES', '-', '-']],
-      theme: 'striped', headStyles: { fillColor: [71, 85, 105] }
-    });
+    // Rodapé em todas as páginas
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.setTextColor(150);
+      doc.text(`BV Contabilidade - Gestão de Alta Performance | Página ${i} de ${pageCount}`, pageWidth / 2, 285, { align: 'center' });
+    }
 
-    doc.save(`Relatorio_${company.name.replace(/\s+/g, '_')}.pdf`);
-    toast('PDF Gerado!', 'success');
-  } catch (e) { console.error(e); toast('Erro no PDF', 'error'); }
+    doc.save(`Relatorio_BV_${company.name?.replace(/\s/g, '_')}.pdf`);
+    toast('Relatório Premium gerado!', 'success');
+  } catch (error) {
+    console.error('Erro PDF:', error);
+    toast('Erro ao gerar o relatório.', 'error');
+  }
 };
 
 // ─── Componente Principal ─────────────────────────────────────────────────────
