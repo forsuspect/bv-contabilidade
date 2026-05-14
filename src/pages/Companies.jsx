@@ -236,87 +236,87 @@ const generateCompanyReport = (company, obligations, apurations) => {
     const pageWidth = doc.internal.pageSize.getWidth();
     const margin = 20;
     
-    // 1. Logo Centralizada (Top)
-    const imgWidth = 45;
-    const imgHeight = 45;
+    // 1. Logo Centralizada (Tamanho Ideal)
+    const imgWidth = 50;
+    const imgHeight = 50;
     const xPos = (pageWidth - imgWidth) / 2;
-    
     try {
-      doc.addImage('/bv-logo.png', 'PNG', xPos, 10, imgWidth, imgHeight);
+      doc.addImage('/bv-logo.png', 'PNG', xPos, 12, imgWidth, imgHeight);
     } catch (e) {
-      console.warn('Logo não encontrada ou falha ao carregar:', e);
+      console.warn('Erro ao carregar logo:', e);
     }
 
     // 2. Título do Relatório
     doc.setFontSize(22);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(15, 23, 42);
-    doc.text('Relatório de Gestão Empresarial', pageWidth / 2, 72, { align: 'center' });
+    doc.text('Relatório de Gestão Empresarial', pageWidth / 2, 75, { align: 'center' });
     
-    doc.setFontSize(10);
+    doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(100);
-    doc.text(`Período de Referência: ${new Date().getFullYear()}`, pageWidth / 2, 79, { align: 'center' });
+    doc.text(`Documento gerado em: ${new Date().toLocaleDateString('pt-BR')} ${new Date().toLocaleTimeString('pt-BR')}`, pageWidth / 2, 82, { align: 'center' });
 
-    // Linha de Separação
-    doc.setDrawColor(241, 245, 249);
-    doc.line(margin, 88, pageWidth - margin, 88);
+    // Linha Divisória
+    doc.setDrawColor(226, 232, 240);
+    doc.line(margin, 90, pageWidth - margin, 90);
 
-    // 3. Dados da Empresa (Cards Estilizados)
+    // 3. Dados Cadastrais Completos (Grid Moderno)
     doc.setFontSize(13);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(15, 23, 42);
-    doc.text('DADOS DA EMPRESA', margin, 100);
+    doc.text('DADOS CADASTRAIS COMPLETOS', margin, 102);
 
-    const infoY = 110;
-    doc.setFontSize(8);
-    doc.setTextColor(148, 163, 184);
-    doc.text('RAZÃO SOCIAL', margin, infoY);
-    doc.text('CNPJ', margin + 90, infoY);
+    const infoY = 112;
+    const col2 = margin + 85;
+    const col3 = margin + 140;
 
-    doc.setFontSize(10);
-    doc.setTextColor(30);
-    doc.setFont('helvetica', 'bold');
-    doc.text(company.name?.toUpperCase() || '-', margin, infoY + 6);
-    doc.text(company.cnpj || '-', margin + 90, infoY + 6);
+    const drawInfo = (label, value, x, y) => {
+      doc.setFontSize(8);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(148, 163, 184);
+      doc.text(label, x, y);
+      doc.setFontSize(10);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(30, 41, 59);
+      doc.text(String(value || '-').toUpperCase(), x, y + 6);
+    };
 
-    const infoY2 = 125;
-    doc.setFontSize(8);
-    doc.setTextColor(148, 163, 184);
-    doc.setFont('helvetica', 'normal');
-    doc.text('REGIME TRIBUTÁRIO', margin, infoY2);
-    doc.text('CONTATO', margin + 90, infoY2);
+    drawInfo('RAZÃO SOCIAL', company.name, margin, infoY);
+    drawInfo('NOME FANTASIA', company.fantasyName, col2, infoY);
+    
+    drawInfo('CNPJ', company.cnpj, margin, infoY + 18);
+    drawInfo('INSCRIÇÃO ESTADUAL', company.stateRegistration, col2, infoY + 18);
+    drawInfo('REGIME TRIBUTÁRIO', company.regime?.replace('_', ' '), col3, infoY + 18);
 
-    doc.setFontSize(10);
-    doc.setTextColor(30);
-    doc.setFont('helvetica', 'bold');
-    doc.text(company.regime?.replace('_', ' ') || '-', margin, infoY2 + 6);
-    doc.text(`${company.email || '-'} | ${company.phone || '-'}`, margin + 90, infoY2 + 6);
+    drawInfo('E-MAIL DE CONTATO', company.email, margin, infoY + 36);
+    drawInfo('TELEFONE', company.phone, col2, infoY + 36);
+    drawInfo('LOCALIZAÇÃO', `${company.city || '-'} - ${company.uf || '-'}`, col3, infoY + 36);
 
-    // 4. Resumo de Faturamento (Destaque)
+    // 4. Resumo Financeiro
     const totalFat = apurations.reduce((s, a) => s + Number(a.faturamento), 0);
     const totalImp = apurations.reduce((s, a) => s + Number(a.imposto), 0);
 
-    doc.setFillColor(15, 23, 42); // Navy Dark Background
-    doc.roundedRect(margin, 142, pageWidth - (margin * 2), 25, 3, 3, 'F');
+    doc.setFillColor(15, 23, 42); // Black/Navy Dark
+    doc.roundedRect(margin, 165, pageWidth - (margin * 2), 25, 3, 3, 'F');
     
     doc.setTextColor(255, 255, 255);
-    doc.setFontSize(9); doc.setFont('helvetica', 'normal');
-    doc.text('FATURAMENTO TOTAL ACUMULADO', margin + 10, 152);
-    doc.text('TOTAL DE IMPOSTOS CALCULADOS', margin + 100, 152);
+    doc.setFontSize(8); doc.setFont('helvetica', 'normal');
+    doc.text('FATURAMENTO BRUTO ACUMULADO', margin + 10, 175);
+    doc.text('TOTAL DE IMPOSTOS CALCULADOS', margin + 100, 175);
 
     doc.setFontSize(14); doc.setFont('helvetica', 'bold');
-    doc.text(`R$ ${totalFat.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, margin + 10, 161);
-    doc.text(`R$ ${totalImp.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, margin + 100, 161);
+    doc.text(`R$ ${totalFat.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, margin + 10, 183);
+    doc.text(`R$ ${totalImp.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, margin + 100, 183);
 
     // 5. Tabelas
     doc.setFontSize(13);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(15, 23, 42);
-    doc.text('PENDÊNCIAS E OBRIGAÇÕES', margin, 185);
+    doc.text('CRONOGRAMA DE OBRIGAÇÕES', margin, 205);
 
     autoTable(doc, {
-      startY: 190,
+      startY: 210,
       head: [['OBRIGAÇÃO', 'VENCIMENTO', 'STATUS']],
       body: obligations.map(ob => [
         ob.name.toUpperCase(), 
@@ -325,20 +325,20 @@ const generateCompanyReport = (company, obligations, apurations) => {
       ]),
       theme: 'grid',
       headStyles: { fillColor: [15, 23, 42], textColor: [255, 255, 255], fontStyle: 'bold' },
-      styles: { fontSize: 8, cellPadding: 4 },
+      styles: { fontSize: 8, cellPadding: 3 },
       columnStyles: { 2: { fontStyle: 'bold' } }
     });
 
-    // Rodapé em todas as páginas
+    // Rodapé
     const pageCount = doc.internal.getNumberOfPages();
     for (let i = 1; i <= pageCount; i++) {
       doc.setPage(i);
       doc.setFontSize(8);
-      doc.setTextColor(150);
-      doc.text(`BV Contabilidade - Gestão de Alta Performance | Página ${i} de ${pageCount}`, pageWidth / 2, 285, { align: 'center' });
+      doc.setTextColor(160);
+      doc.text(`BV Contabilidade | Relatório Estratégico de Gestão | Página ${i} de ${pageCount}`, pageWidth / 2, 285, { align: 'center' });
     }
 
-    doc.save(`Relatorio_BV_${company.name?.replace(/\s/g, '_')}.pdf`);
+    doc.save(`Relatorio_Premium_BV_${company.name?.replace(/\s/g, '_')}.pdf`);
     toast('Relatório Premium gerado!', 'success');
   } catch (error) {
     console.error('Erro PDF:', error);
