@@ -288,21 +288,28 @@ const Companies = () => {
 
       <div className={styles.filters}>
         <div className={styles.searchBar}><Search size={18} /><input placeholder="Buscar empresa..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} /></div>
-        <div className={styles.selectWrapper}>
-          <Filter size={18} /><select value={filterRegime} onChange={e => setFilterRegime(e.target.value)}>
+        <div className={styles.selectFieldWrapper} style={{ width: '220px' }}>
+          <select value={filterRegime} onChange={e => setFilterRegime(e.target.value)}>
             <option value="ALL">Todos os Regimes</option>
             <option value="SIMPLES_NACIONAL">Simples Nacional</option>
             <option value="LUCRO_PRESUMIDO">Lucro Presumido</option>
             <option value="LUCRO_REAL">Lucro Real</option>
-          </select><ChevronDown size={16} />
+          </select>
+          <Filter size={18} className={styles.selectIcon} />
         </div>
       </div>
 
       <div className={styles.grid}>
-        {filtered.map(c => (
-          <div key={c.id} className={styles.card}>
+        {filtered.map((c, index) => (
+          <div key={c.id} className={`${styles.card} animate-fade-in`} style={{ animationDelay: `${index * 0.05}s` }}>
             <div className={styles.cardHeader}>
-              <div className={styles.companyInfo}><div className={styles.avatar}>{c.name[0]}</div><div><h3 className={styles.companyName}>{c.name}</h3><p className={styles.companyCnpj}>{c.cnpj}</p></div></div>
+              <div className={styles.companyInfo}>
+                <div className={styles.avatar}>{c.name[0]}</div>
+                <div>
+                  <h3 className={styles.companyName}>{c.name}</h3>
+                  <p className={styles.companyCnpj}>{c.cnpj}</p>
+                </div>
+              </div>
               <div className={styles.actions}>
                 <button className={styles.iconBtn} onClick={() => { setCompanyToDelete(c); setShowDeleteModal(true); }}><Trash2 size={16} /></button>
               </div>
@@ -310,6 +317,8 @@ const Companies = () => {
             <div className={styles.cardBody}>
               <div className={styles.infoRow}><span>Regime</span><span className={styles.badge}>{c.regime?.replace('_',' ')}</span></div>
               <div className={styles.infoRow}><span>Status</span><span className={styles.statusActive}>Regular</span></div>
+              {c.phone && <div className={styles.infoRow}><span>Contato</span><small>{c.phone}</small></div>}
+              {c.email && <div className={styles.infoRow}><small style={{ color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.email}</small></div>}
               {c.city && <div className={styles.infoRow}><span>Local</span><small>{c.city} - {c.uf}</small></div>}
             </div>
             <div className={styles.cardFooter}>
