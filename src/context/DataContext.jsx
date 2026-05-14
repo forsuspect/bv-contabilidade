@@ -148,7 +148,11 @@ export const DataProvider = ({ children }) => {
   // Obrigações
   const addObligation = async (ob) => {
     if (!currentUserId) return;
-    const { error } = await supabase.from('obligations').insert([{ ...toSnakeCase(ob), user_id: currentUserId }]);
+    const { error } = await supabase.from('obligations').insert([{ 
+      ...toSnakeCase(ob), 
+      status: 'PENDING',
+      user_id: currentUserId 
+    }]);
     if (error) toast('Erro ao salvar obrigação', 'error');
     else fetchData();
   };
@@ -156,6 +160,13 @@ export const DataProvider = ({ children }) => {
   const deleteObligation = async (id) => {
     const { error } = await supabase.from('obligations').delete().eq('id', id);
     if (!error) fetchData();
+  };
+
+  const toggleObligationStatus = async (id, currentStatus) => {
+    const newStatus = currentStatus === 'PAID' ? 'PENDING' : 'PAID';
+    const { error } = await supabase.from('obligations').update({ status: newStatus }).eq('id', id);
+    if (!error) fetchData();
+    else toast('Erro ao atualizar status', 'error');
   };
 
   // Apurações
