@@ -95,10 +95,6 @@ const Dashboard = () => {
           <h1 className={styles.title}>Dashboard</h1>
           <p className={styles.subtitle}>Bem-vindo de volta! Aqui está o resumo da sua contabilidade.</p>
         </div>
-        <button className={styles.exportBtn} onClick={handleExport}>
-          <FileText size={18} />
-          Exportar Resumo
-        </button>
       </header>
 
       <div className={styles.statsGrid}>

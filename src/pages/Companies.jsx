@@ -288,7 +288,7 @@ const Companies = () => {
 
       <div className={styles.filters}>
         <div className={styles.searchBar}><Search size={18} /><input placeholder="Buscar empresa..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} /></div>
-        <div className={styles.selectFieldWrapper} style={{ width: '220px' }}>
+        <div className={styles.selectFieldWrapper}>
           <select value={filterRegime} onChange={e => setFilterRegime(e.target.value)}>
             <option value="ALL">Todos os Regimes</option>
             <option value="SIMPLES_NACIONAL">Simples Nacional</option>
