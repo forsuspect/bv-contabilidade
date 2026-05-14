@@ -390,7 +390,7 @@ export const DataProvider = ({ children }) => {
       documents, addDocument, deleteDocument,
       payrolls, addPayroll, updatePayrollStatus,
       activities,
-      obligations, addObligation, deleteObligation,
+      obligations, addObligation, deleteObligation, toggleObligationStatus,
       apurations, addApuracao,
       costs, addCost, deleteCost
     }}>

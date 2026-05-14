@@ -472,7 +472,7 @@
   background: var(--surface);
   border-radius: var(--radius-lg);
   width: 100%;
-  max-width: 860px;
+  max-width: 900px;
   max-height: 90vh;
   overflow: hidden;
   display: flex;
@@ -484,7 +484,7 @@
 .obligationsHeader {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   padding: 1.5rem;
   border-bottom: 1px solid var(--border);
 }
@@ -492,142 +492,145 @@
 .obligationsTitle {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: var(--text-main);
-}
-
-.obligationsSubtitle {
-  font-size: 0.8rem;
-  color: var(--text-muted);
-  margin-top: 0.25rem;
+  gap: 0.75rem;
 }
 
 .obligationsTabs {
   display: flex;
   border-bottom: 1px solid var(--border);
   padding: 0 1rem;
+  background: #f8fafc;
 }
 
 .obTab {
   display: flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.85rem 1.25rem;
-  font-size: 0.85rem;
+  gap: 0.5rem;
+  padding: 1rem 1.5rem;
+  font-size: 0.875rem;
   font-weight: 600;
   color: var(--text-muted);
-  border-bottom: 2px solid transparent;
-  transition: all 0.2s;
+  border-bottom: 3px solid transparent;
   cursor: pointer;
-  background: none;
-  border-top: none;
-  border-left: none;
-  border-right: none;
 }
 
-.obTab:hover { color: var(--text-main); }
-.obTabActive { color: var(--accent); border-bottom-color: var(--accent); }
+.obTabActive {
+  color: #111827;
+  border-bottom-color: #111827;
+}
 
 .obligationsBody {
   display: flex;
   flex: 1;
   overflow: hidden;
-  min-height: 0;
 }
 
 .obligationsLeft {
-  width: 260px;
-  flex-shrink: 0;
-  padding: 1.25rem;
+  width: 350px;
+  padding: 1.5rem;
   border-right: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+  background: #f8fafc;
   overflow-y: auto;
 }
 
 .obligationsRight {
   flex: 1;
-  padding: 1.25rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
+  padding: 1.5rem;
   overflow-y: auto;
 }
 
-/* ── Calendar ──────────────────────────────────── */
-.calendar { display: flex; flex-direction: column; gap: 0.5rem; }
+/* ── Obligations Calendar ──────────────────────────────────── */
+.calendarContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  background: white;
+  padding: 1.5rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+}
+
+.calendarHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.calendarTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.calendarLegend {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #64748b;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.legendDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.paid { background-color: #10b981; }
+.pending { background-color: #f59e0b; }
+.late { background-color: #ef4444; }
 
 .calendarNav {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: var(--text-main);
+  background: #f8fafc;
+  padding: 0.5rem 1rem;
+  border-radius: 10px;
 }
 
-.calendarNav button {
-  background: var(--background);
-  border-radius: var(--radius-sm);
-  padding: 0.2rem 0.4rem;
-  color: var(--text-muted);
-  transition: all 0.2s;
+.navBtn {
+  color: #64748b;
+  padding: 0.25rem;
   cursor: pointer;
 }
-.calendarNav button:hover { color: var(--accent); }
+
+.currentMonth {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: #1e293b;
+  text-transform: lowercase;
+}
 
 .calendarGrid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: 2px;
+  gap: 8px;
 }
 
 .calDayLabel {
   text-align: center;
-  font-size: 0.65rem;
+  font-size: 0.75rem;
   font-weight: 700;
-  color: var(--text-muted);
-  padding: 0.25rem 0;
+  color: #1e293b;
+  padding-bottom: 0.5rem;
 }
 
 .calCell {
-  position: relative;
-  text-align: center;
-  font-size: 0.72rem;
-  padding: 0.3rem 0;
-  border-radius: 4px;
-  cursor: default;
-  color: var(--text-main);
-}
-
-.calEmpty { opacity: 0; pointer-events: none; }
-.calToday { background: var(--accent); color: white; font-weight: 700; border-radius: 50%; }
-.calHasOb { background: rgba(59,130,246,0.1); color: var(--accent); font-weight: 700; }
-
-.calDot {
-  position: absolute;
-  bottom: 2px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: var(--accent);
-}
-
-.calLegend {
+  aspect-ratio: 1;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 0.4rem;
-  font-size: 0.72rem;
-  color: var(--text-muted);
-}
-
-.legendDot {
-  width: 8px;
+  justify-content: center;
+  border: 1px solid #f1f5f9;
+  border-radius: 8px;
+  position: relative;
   height: 8px;
   border-radius: 50%;
   background: var(--accent);

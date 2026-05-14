@@ -32,34 +32,56 @@ const MiniCalendar = ({ obligations }) => {
 
   const dayMap = {};
   obligations.forEach(ob => {
-    const obMonth = Number(ob.month);
-    if (obMonth === 0 || obMonth === month + 1) {
-      const d = Number(ob.day);
-      if (!dayMap[d]) dayMap[d] = [];
-      dayMap[d].push(ob);
-    }
+    const d = Number(ob.day);
+    if (!dayMap[d]) dayMap[d] = [];
+    dayMap[d].push(ob);
   });
+
+  const getDayStatus = (obs) => {
+    if (obs.every(o => o.status === 'PAID')) return 'paid';
+    if (obs.some(o => {
+      const isPast = o.day < today.getDate() && (o.month === 0 || o.month === today.getMonth() + 1);
+      return o.status !== 'PAID' && isPast;
+    })) return 'late';
+    return 'pending';
+  };
 
   const cells = [];
   for (let i = 0; i < firstDay; i++) cells.push(null);
   for (let d = 1; d <= daysInMonth; d++) cells.push(d);
 
   return (
-    <div className={styles.calendar}>
-      <div className={styles.calendarNav}>
-        <button onClick={() => setCurr(new Date(year, month - 1, 1))}><ChevronLeft size={14} /></button>
-        <span>{MONTH_NAMES[month + 1]} {year}</span>
-        <button onClick={() => setCurr(new Date(year, month + 1, 1))}><ChevronRight size={14} /></button>
+    <div className={styles.calendarContainer}>
+      <div className={styles.calendarHeader}>
+        <h4 className={styles.calendarTitle}>Calendário de Pendências</h4>
+        <div className={styles.calendarLegend}>
+          <div className={styles.legendItem}><span className={`${styles.legendDot} ${styles.paid}`} /> Pago</div>
+          <div className={styles.legendItem}><span className={`${styles.legendDot} ${styles.pending}`} /> A vencer</div>
+          <div className={styles.legendItem}><span className={`${styles.legendDot} ${styles.late}`} /> Em atraso</div>
+        </div>
       </div>
+
+      <div className={styles.calendarNav}>
+        <button className={styles.navBtn} onClick={() => setCurr(new Date(year, month - 1, 1))}><ChevronLeft size={16} /></button>
+        <span className={styles.currentMonth}>{MONTH_NAMES[month + 1]} {year}</span>
+        <button className={styles.navBtn} onClick={() => setCurr(new Date(year, month + 1, 1))}><ChevronRight size={16} /></button>
+      </div>
+
       <div className={styles.calendarGrid}>
-        {['D','S','T','Q','Q','S','S'].map((d, i) => <div key={i} className={styles.calDayLabel}>{d}</div>)}
+        {['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'].map((d, i) => <div key={i} className={styles.calDayLabel}>{d}</div>)}
         {cells.map((day, i) => {
           const isToday = day && today.getDate() === day && today.getMonth() === month && today.getFullYear() === year;
-          const hasOb = day && dayMap[day];
+          const obs = day && dayMap[day];
+          const status = obs ? getDayStatus(obs) : null;
+          
           return (
-            <div key={i} className={`${styles.calCell} ${!day ? styles.calEmpty : ''} ${isToday ? styles.calToday : ''} ${hasOb ? styles.calHasOb : ''}`} title={hasOb ? dayMap[day].map(o => o.name).join(', ') : ''}>
-              {day}
-              {hasOb && <span className={styles.calDot} />}
+            <div key={i} className={`${styles.calCell} ${!day ? styles.calEmpty : ''} ${isToday ? styles.calToday : ''}`}>
+              {day && (
+                <>
+                  <span className={styles.dayNumber}>{day}</span>
+                  {status && <span className={`${styles.statusDot} ${styles[status]}`} />}
+                </>
+              )}
             </div>
           );
         })}
@@ -69,7 +91,7 @@ const MiniCalendar = ({ obligations }) => {
 };
 
 const ObligationsPanel = ({ company, onClose }) => {
-  const { obligations: allDbObligations, addObligation, deleteObligation, apurations: allDbApurations, addApuracao } = useData();
+  const { obligations: allDbObligations, addObligation, deleteObligation, toggleObligationStatus, apurations: allDbApurations, addApuracao } = useData();
   const [activeTab, setActiveTab] = useState('fiscal');
   const [showAddForm, setShowAddForm] = useState(false);
   const [addForm, setAddForm] = useState({ name: '', day: '', month: '0' });
@@ -109,9 +131,10 @@ const ObligationsPanel = ({ company, onClose }) => {
   const allObs = [...defaultList, ...tabCustomObs];
 
   const getStatus = (ob) => {
+    if (ob.status === 'PAID') return 'paid';
     const today = new Date();
     if (ob.month !== 0 && ob.month !== today.getMonth() + 1) return 'future';
-    if (ob.day < today.getDate()) return 'past';
+    if (ob.day < today.getDate()) return 'late';
     if (ob.day - today.getDate() <= 5) return 'soon';
     return 'ok';
   };
@@ -164,12 +187,14 @@ const ObligationsPanel = ({ company, onClose }) => {
                 <ul className={styles.obList}>
                   {allObs.map((ob, i) => (
                     <li key={i} className={styles.obItem}>
-                      <div className={`${styles.obStatus} ${styles['obStatus_' + getStatus(ob)]}`}><Clock size={13} /></div>
+                      <button className={`${styles.obCheck} ${ob.status === 'PAID' ? styles.obCheckPaid : ''}`} onClick={() => ob.id && toggleObligationStatus(ob.id, ob.status)}>
+                        {ob.status === 'PAID' ? <CheckCircle size={16} /> : <div className={styles.checkCircle} />}
+                      </button>
                       <div className={styles.obInfo}>
-                        <span>{ob.name}</span>
+                        <span className={ob.status === 'PAID' ? styles.strike : ''}>{ob.name}</span>
                         <small>Dia {ob.day}{ob.month > 0 ? ` de ${MONTH_NAMES[ob.month]}` : ' (mensal)'}</small>
                       </div>
-                      {ob.id && <button className={styles.removeObBtn} onClick={() => deleteObligation(ob.id)}><X size={13} /></button>}
+                      {ob.id && <button className={styles.removeObBtn} onClick={() => deleteObligation(ob.id)}><Trash2 size={13} /></button>}
                     </li>
                   ))}
                 </ul>
