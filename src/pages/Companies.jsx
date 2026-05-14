@@ -92,7 +92,7 @@ const MiniCalendar = ({ obligations }) => {
 
 const ObligationsPanel = ({ company, onClose }) => {
   const { obligations: allDbObligations, addObligation, deleteObligation, toggleObligationStatus, apurations: allDbApurations, addApuracao } = useData();
-  const [activeTab, setActiveTab] = useState('fiscal');
+  const [activeTab, setActiveTab] = useState('calendario');
   const [showAddForm, setShowAddForm] = useState(false);
   const [addForm, setAddForm] = useState({ name: '', day: '', month: '0' });
   const [apuracaoForm, setApuracaoForm] = useState({ faturamento: '', imposto: '', mes: new Date().getMonth() + 1, ano: new Date().getFullYear() });
@@ -126,18 +126,9 @@ const ObligationsPanel = ({ company, onClose }) => {
     toast('Apuração confirmada!', 'success');
   };
 
-  const tabCustomObs = companyCustomObs.filter(ob => ob.type === activeTab);
-  const defaultList = (activeTab === 'fiscal') ? (DEFAULT_FISCAL[regime] || []) : (activeTab === 'labor' ? DEFAULT_LABOR : []);
+  const tabCustomObs = companyCustomObs.filter(ob => ob.type === activeTab || (activeTab === 'calendario' && (ob.type === 'fiscal' || ob.type === 'labor')));
+  const defaultList = (activeTab === 'fiscal' || activeTab === 'calendario') ? (DEFAULT_FISCAL[regime] || []) : (activeTab === 'labor' ? DEFAULT_LABOR : []);
   const allObs = [...defaultList, ...tabCustomObs];
-
-  const getStatus = (ob) => {
-    if (ob.status === 'PAID') return 'paid';
-    const today = new Date();
-    if (ob.month !== 0 && ob.month !== today.getMonth() + 1) return 'future';
-    if (ob.day < today.getDate()) return 'late';
-    if (ob.day - today.getDate() <= 5) return 'soon';
-    return 'ok';
-  };
 
   return (
     <div className={styles.modalOverlay}>
@@ -148,8 +139,9 @@ const ObligationsPanel = ({ company, onClose }) => {
         </div>
 
         <div className={styles.obligationsTabs}>
-          {['fiscal', 'labor', 'apuracao'].map(tab => (
+          {['calendario', 'fiscal', 'labor', 'apuracao'].map(tab => (
             <button key={tab} className={`${styles.obTab} ${activeTab === tab ? styles.obTabActive : ''}`} onClick={() => { setActiveTab(tab); setShowAddForm(false); }}>
+              {tab === 'calendario' && <Calendar size={15} />}
               {tab === 'fiscal' && <FileText size={15} />}
               {tab === 'labor' && <AlertTriangle size={15} />}
               {tab === 'apuracao' && <CheckCircle size={15} />}
@@ -159,53 +151,54 @@ const ObligationsPanel = ({ company, onClose }) => {
         </div>
 
         <div className={styles.obligationsBody}>
+          {activeTab === 'calendario' && (
+            <div className={styles.calendarFullWidth}><MiniCalendar obligations={allObs} /></div>
+          )}
+
           {(activeTab === 'fiscal' || activeTab === 'labor') && (
-            <>
-              <div className={styles.obligationsLeft}><MiniCalendar obligations={allObs} /></div>
-              <div className={styles.obligationsRight}>
-                <div className={styles.obListHeader}>
-                  <h4>{activeTab === 'fiscal' ? 'Fiscais' : 'Trabalhistas'}</h4>
-                  <button className={styles.addObBtn} onClick={() => setShowAddForm(!showAddForm)}><Plus size={14} /> Adicionar</button>
-                </div>
-                {showAddForm && (
-                  <form className={styles.addObForm} onSubmit={(e) => {
-                    e.preventDefault();
-                    addObligation({ companyId: company.id, name: addForm.name, day: Number(addForm.day), month: Number(addForm.month), type: activeTab });
-                    setAddForm({ name: '', day: '', month: '0' }); setShowAddForm(false); toast('Adicionado!', 'success');
-                  }}>
-                    <input className={styles.obInput} placeholder="Nome" value={addForm.name} onChange={e => setAddForm({...addForm, name: e.target.value})} required />
-                    <div className={styles.addObRow}>
-                      <input className={styles.obInput} type="number" placeholder="Dia" value={addForm.day} onChange={e => setAddForm({...addForm, day: e.target.value})} required />
-                      <select className={styles.obInput} value={addForm.month} onChange={e => setAddForm({...addForm, month: e.target.value})}>
-                        <option value="0">Mensal</option>
-                        {MONTH_NAMES.slice(1).map((m, i) => <option key={i+1} value={i+1}>{m}</option>)}
-                      </select>
-                    </div>
-                    <button type="submit" className={styles.saveBtn}>Salvar</button>
-                  </form>
-                )}
-                <ul className={styles.obList}>
-                  {allObs.map((ob, i) => (
-                    <li key={i} className={styles.obItem}>
-                      <button className={`${styles.obCheck} ${ob.status === 'PAID' ? styles.obCheckPaid : ''}`} onClick={() => ob.id && toggleObligationStatus(ob.id, ob.status)}>
-                        {ob.status === 'PAID' ? <CheckCircle size={16} /> : <div className={styles.checkCircle} />}
-                      </button>
-                      <div className={styles.obInfo}>
-                        <span className={ob.status === 'PAID' ? styles.strike : ''}>{ob.name}</span>
-                        <small>Dia {ob.day}{ob.month > 0 ? ` de ${MONTH_NAMES[ob.month]}` : ' (mensal)'}</small>
-                      </div>
-                      {ob.id && <button className={styles.removeObBtn} onClick={() => deleteObligation(ob.id)}><Trash2 size={13} /></button>}
-                    </li>
-                  ))}
-                </ul>
+            <div className={styles.obligationsFullList}>
+              <div className={styles.obListHeader}>
+                <h4>{activeTab === 'fiscal' ? 'Obrigações Fiscais' : 'Obrigações Trabalhistas'}</h4>
+                <button className={styles.addObBtn} onClick={() => setShowAddForm(!showAddForm)}><Plus size={14} /> Adicionar</button>
               </div>
-            </>
+              {showAddForm && (
+                <form className={styles.addObForm} onSubmit={(e) => {
+                  e.preventDefault();
+                  addObligation({ companyId: company.id, name: addForm.name, day: Number(addForm.day), month: Number(addForm.month), type: activeTab });
+                  setAddForm({ name: '', day: '', month: '0' }); setShowAddForm(false); toast('Adicionado!', 'success');
+                }}>
+                  <input className={styles.obInput} placeholder="Nome da Obrigação" value={addForm.name} onChange={e => setAddForm({...addForm, name: e.target.value})} required />
+                  <div className={styles.addObRow}>
+                    <input className={styles.obInput} type="number" placeholder="Dia" value={addForm.day} onChange={e => setAddForm({...addForm, day: e.target.value})} required />
+                    <select className={styles.obInput} value={addForm.month} onChange={e => setAddForm({...addForm, month: e.target.value})}>
+                      <option value="0">Mensal</option>
+                      {MONTH_NAMES.slice(1).map((m, i) => <option key={i+1} value={i+1}>{m}</option>)}
+                    </select>
+                  </div>
+                  <button type="submit" className={styles.saveBtn}>Salvar Obrigação</button>
+                </form>
+              )}
+              <ul className={styles.obList}>
+                {allObs.map((ob, i) => (
+                  <li key={i} className={styles.obItem}>
+                    <button className={`${styles.obCheck} ${ob.status === 'PAID' ? styles.obCheckPaid : ''}`} onClick={() => ob.id && toggleObligationStatus(ob.id, ob.status)}>
+                      {ob.status === 'PAID' ? <CheckCircle size={16} /> : <div className={styles.checkCircle} />}
+                    </button>
+                    <div className={styles.obInfo}>
+                      <span className={ob.status === 'PAID' ? styles.strike : ''}>{ob.name}</span>
+                      <small>Vencimento: Dia {ob.day}{ob.month > 0 ? ` de ${MONTH_NAMES[ob.month]}` : ' (Todo mês)'}</small>
+                    </div>
+                    {ob.id && <button className={styles.removeObBtn} onClick={() => deleteObligation(ob.id)}><Trash2 size={13} /></button>}
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
 
           {activeTab === 'apuracao' && (
             <div className={styles.apuracaoPanel}>
               <div className={styles.apuracaoForm}>
-                <h4>Nova Apuração</h4>
+                <h4>Nova Apuração Fiscal</h4>
                 <div className={styles.apuracaoRow}>
                   <select className={styles.obInput} value={apuracaoForm.mes} onChange={e => setApuracaoForm({...apuracaoForm, mes: Number(e.target.value)})}>
                     {MONTH_NAMES.slice(1).map((m, i) => <option key={i+1} value={i+1}>{m}</option>)}
@@ -213,16 +206,16 @@ const ObligationsPanel = ({ company, onClose }) => {
                   <input className={styles.obInput} type="number" value={apuracaoForm.ano} onChange={e => setApuracaoForm({...apuracaoForm, ano: e.target.value})} />
                 </div>
                 <input className={styles.obInput} placeholder="Faturamento Bruto (R$)" value={apuracaoForm.faturamento} onChange={handleFaturamentoChange} />
-                <div className={styles.apuracaoCalc}><span>Imposto ({taxRate}%)</span><strong>R$ {apuracaoForm.imposto || '0,00'}</strong></div>
-                <button className={styles.confirmarBtn} onClick={confirmarApuracao}><CheckCircle size={16} /> Confirmar</button>
+                <div className={styles.apuracaoCalc}><span>Imposto Calculado ({taxRate}%)</span><strong>R$ {apuracaoForm.imposto || '0,00'}</strong></div>
+                <button className={styles.confirmarBtn} onClick={confirmarApuracao}><CheckCircle size={16} /> Confirmar Apuração</button>
               </div>
               <div className={styles.historicoSection}>
-                <h4>Histórico</h4>
+                <h4>Histórico de Apurações</h4>
                 <ul className={styles.obList}>
                   {companyApurations.map((h, i) => (
                     <li key={i} className={styles.obItem}>
                       <div className={styles.obStatus}><CheckCircle size={13} /></div>
-                      <div className={styles.obInfo}><span>{MONTH_NAMES[h.mes]} / {h.ano}</span><small>Fat: R$ {h.faturamento.toLocaleString('pt-BR')} · Imp: R$ {h.imposto.toLocaleString('pt-BR')}</small></div>
+                      <div className={styles.obInfo}><span>{MONTH_NAMES[h.mes]} / {h.ano}</span><small>Faturamento: R$ {h.faturamento.toLocaleString('pt-BR')} · Imposto: R$ {h.imposto.toLocaleString('pt-BR')}</small></div>
                     </li>
                   ))}
                 </ul>
@@ -240,8 +233,8 @@ const generateCompanyReport = (company, obligations, apurations) => {
   try {
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
-    const pageHeight = doc.internal.pageSize.getHeight();
-
+    
+    // Header
     doc.setFillColor(15, 23, 42);
     doc.rect(0, 0, pageWidth, 50, 'F');
     doc.setTextColor(255, 255, 255);
@@ -253,31 +246,52 @@ const generateCompanyReport = (company, obligations, apurations) => {
     doc.setTextColor(255, 255, 255);
     doc.text(new Date().toLocaleDateString('pt-BR'), pageWidth - 20, 25, { align: 'right' });
 
+    // Company Data Section
     doc.setTextColor(15, 23, 42);
-    doc.setFontSize(16); doc.text(company.name?.toUpperCase() || 'EMPRESA', 20, 70);
-    doc.setFontSize(10); doc.text(`CNPJ: ${company.cnpj || '---'} | REGIME: ${company.regime?.replace(/_/g, ' ') || '---'}`, 20, 77);
+    doc.setFontSize(16); doc.text(company.name?.toUpperCase() || 'EMPRESA', 20, 65);
+    doc.setFontSize(9); doc.setFont('helvetica', 'bold');
+    doc.text('DADOS CADASTRAIS:', 20, 75);
+    doc.setFont('helvetica', 'normal');
+    
+    const companyData = [
+      [`Razão Social: ${company.name || '-'}`, `CNPJ: ${company.cnpj || '-'}`],
+      [`Nome Fantasia: ${company.fantasyName || '-'}`, `Inscrição Estadual: ${company.stateRegistration || '-'}`],
+      [`E-mail: ${company.email || '-'}`, `Telefone: ${company.phone || '-'}`],
+      [`Cidade/UF: ${company.city || '-'}/${company.uf || '-'}`, `Regime: ${company.regime?.replace(/_/g, ' ') || '-'}`]
+    ];
 
+    autoTable(doc, {
+      startY: 78, margin: { left: 20 },
+      body: companyData,
+      theme: 'plain',
+      styles: { fontSize: 8, cellPadding: 1 },
+      columnStyles: { 0: { cellWidth: 80 }, 1: { cellWidth: 80 } }
+    });
+
+    const summaryY = doc.lastAutoTable.finalY + 10;
     const totalFat = apurations.reduce((s, a) => s + Number(a.faturamento), 0);
     const totalImp = apurations.reduce((s, a) => s + Number(a.imposto), 0);
 
-    doc.setFillColor(248, 250, 252); doc.roundedRect(20, 85, pageWidth - 40, 25, 2, 2, 'F');
+    doc.setFillColor(248, 250, 252); doc.roundedRect(20, summaryY, pageWidth - 40, 25, 2, 2, 'F');
     doc.setTextColor(71, 85, 105); doc.setFontSize(8);
-    doc.text('FATURAMENTO ACUMULADO', 25, 93); doc.text('TOTAL IMPOSTOS', pageWidth / 2, 93);
+    doc.text('FATURAMENTO ACUMULADO', 25, summaryY + 8); doc.text('TOTAL IMPOSTOS APURADOS', pageWidth / 2, summaryY + 8);
     doc.setTextColor(15, 23, 42); doc.setFontSize(12); doc.setFont('helvetica', 'bold');
-    doc.text(`R$ ${totalFat.toLocaleString('pt-BR')}`, 25, 102); doc.text(`R$ ${totalImp.toLocaleString('pt-BR')}`, pageWidth / 2, 102);
+    doc.text(`R$ ${totalFat.toLocaleString('pt-BR')}`, 25, summaryY + 17); doc.text(`R$ ${totalImp.toLocaleString('pt-BR')}`, pageWidth / 2, summaryY + 17);
 
+    // Apurations Table
     autoTable(doc, {
-      startY: 120, margin: { left: 20 },
+      startY: summaryY + 35, margin: { left: 20 },
       head: [['MÊS/ANO', 'FATURAMENTO', 'IMPOSTO', 'STATUS']],
       body: apurations.map(ap => [`${MONTH_NAMES[ap.mes]}/${ap.ano}`, `R$ ${ap.faturamento.toLocaleString('pt-BR')}`, `R$ ${ap.imposto.toLocaleString('pt-BR')}`, 'CONFIRMADO']),
       theme: 'grid', headStyles: { fillColor: [15, 23, 42] }
     });
 
-    const obRows = obligations.map(ob => [ob.name.toUpperCase(), ob.type.toUpperCase(), `DIA ${ob.day}${ob.month > 0 ? `/${ob.month}` : ' (MENSAL)'}`]);
+    // Obligations Table
+    const obRows = obligations.map(ob => [ob.name.toUpperCase(), ob.type.toUpperCase(), `DIA ${ob.day}${ob.month > 0 ? `/${ob.month}` : ' (MENSAL)'}`, ob.status === 'PAID' ? 'PAGO' : 'PENDENTE']);
     autoTable(doc, {
       startY: doc.lastAutoTable.finalY + 15, margin: { left: 20 },
-      head: [['OBRIGAÇÃO', 'TIPO', 'VENCIMENTO']],
-      body: obRows.length ? obRows : [['-', 'SEM OBRIGAÇÕES', '-']],
+      head: [['OBRIGAÇÃO', 'TIPO', 'VENCIMENTO', 'STATUS']],
+      body: obRows.length ? obRows : [['-', 'SEM OBRIGAÇÕES', '-', '-']],
       theme: 'striped', headStyles: { fillColor: [71, 85, 105] }
     });
 
