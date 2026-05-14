@@ -354,8 +354,20 @@ const Companies = () => {
               </div>
             </div>
             <div className={styles.cardBody}>
-              <div className={styles.infoRow}><span>Regime</span><span className={styles.badge}>{c.regime?.replace('_',' ')}</span></div>
-              <div className={styles.infoRow}><span>Status</span><span className={styles.statusActive}>Regular</span></div>
+              <div className={styles.infoRow}>
+                <span>Regime</span>
+                <span className={styles.badge}>
+                  <Building2 size={12} />
+                  {c.regime?.replace('_',' ')}
+                </span>
+              </div>
+              <div className={styles.infoRow}>
+                <span>Status</span>
+                <span className={styles.statusActive}>
+                  <CheckCircle size={12} />
+                  Regular
+                </span>
+              </div>
               {c.phone && <div className={styles.infoRow}><span>Contato</span><small>{c.phone}</small></div>}
               {c.email && <div className={styles.infoRow}><small style={{ color: 'var(--text-muted)', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.email}</small></div>}
               {c.city && <div className={styles.infoRow}><span>Local</span><small>{c.city} - {c.uf}</small></div>}

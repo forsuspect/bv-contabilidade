@@ -175,12 +175,18 @@
 }
 
 .badge {
-  background-color: var(--background);
-  padding: 0.25rem 0.5rem;
-  border-radius: var(--radius-sm);
-  font-weight: 600;
-  color: var(--primary);
-  font-size: 0.75rem;
+  padding: 0.35rem 0.75rem;
+  background-color: #f1f5f9;
+  color: #334155;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  border: 1px solid #e2e8f0;
 }
 
 .status {
@@ -191,8 +197,16 @@
 }
 
 .statusActive {
-  background-color: rgba(16, 185, 129, 0.1);
-  color: var(--success);
+  padding: 0.35rem 0.75rem;
+  background-color: #ecfdf5;
+  color: #059669;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  border: 1px solid #d1fae5;
 }
 
 .statusPending {
