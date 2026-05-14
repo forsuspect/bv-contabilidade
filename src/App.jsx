@@ -1,3 +1,4 @@
+// BV Contabilidade - Premium Dashboard v1.1.0 (Black & Gray Edition)
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import Login from './pages/Login';
