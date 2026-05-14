@@ -236,38 +236,49 @@ const generateCompanyReport = (company, obligations, apurations) => {
     const pageWidth = doc.internal.pageSize.getWidth();
     const margin = 20;
     
-    // 1. Logo Centralizada (Tamanho Ideal)
-    const imgWidth = 50;
-    const imgHeight = 50;
-    const xPos = (pageWidth - imgWidth) / 2;
+    // 1. Logo Estilizada (Design de Emblema Premium)
+    const logoSize = 32;
+    const centerX = pageWidth / 2;
+    const centerY = 30;
+    
+    // Círculo decorativo ao redor da logo
+    doc.setDrawColor(226, 232, 240); // Soft Gray
+    doc.setLineWidth(0.5);
+    doc.circle(centerX, centerY, 22, 'S');
+    
+    // Linhas decorativas laterais
+    doc.setDrawColor(203, 213, 225);
+    doc.line(margin, centerY, centerX - 28, centerY);
+    doc.line(centerX + 28, centerY, pageWidth - margin, centerY);
+
     try {
-      doc.addImage('/bv-logo.png', 'PNG', xPos, 12, imgWidth, imgHeight);
+      doc.addImage('/bv-logo.png', 'PNG', centerX - (logoSize / 2), centerY - (logoSize / 2), logoSize, logoSize);
     } catch (e) {
       console.warn('Erro ao carregar logo:', e);
     }
 
-    // 2. Título do Relatório
-    doc.setFontSize(22);
+    // 2. Título do Relatório (Posicionamento Ajustado)
+    doc.setFontSize(20);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(15, 23, 42);
-    doc.text('Relatório de Gestão Empresarial', pageWidth / 2, 75, { align: 'center' });
+    doc.text('Relatório de Gestão Empresarial', pageWidth / 2, 65, { align: 'center' });
     
     doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
     doc.setTextColor(100);
-    doc.text(`Documento gerado em: ${new Date().toLocaleDateString('pt-BR')} ${new Date().toLocaleTimeString('pt-BR')}`, pageWidth / 2, 82, { align: 'center' });
+    doc.text(`Documento gerado em: ${new Date().toLocaleDateString('pt-BR')} ${new Date().toLocaleTimeString('pt-BR')}`, pageWidth / 2, 72, { align: 'center' });
 
     // Linha Divisória
     doc.setDrawColor(226, 232, 240);
-    doc.line(margin, 90, pageWidth - margin, 90);
+    doc.line(margin, 80, pageWidth - margin, 80);
 
     // 3. Dados Cadastrais Completos (Grid Moderno)
     doc.setFontSize(13);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(15, 23, 42);
-    doc.text('DADOS CADASTRAIS COMPLETOS', margin, 102);
+    doc.text('DADOS CADASTRAIS COMPLETOS', margin, 92);
 
-    const infoY = 112;
+    const infoY = 102;
     const col2 = margin + 85;
     const col3 = margin + 140;
 
@@ -298,25 +309,25 @@ const generateCompanyReport = (company, obligations, apurations) => {
     const totalImp = apurations.reduce((s, a) => s + Number(a.imposto), 0);
 
     doc.setFillColor(15, 23, 42); // Black/Navy Dark
-    doc.roundedRect(margin, 165, pageWidth - (margin * 2), 25, 3, 3, 'F');
+    doc.roundedRect(margin, 155, pageWidth - (margin * 2), 25, 3, 3, 'F');
     
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(8); doc.setFont('helvetica', 'normal');
-    doc.text('FATURAMENTO BRUTO ACUMULADO', margin + 10, 175);
-    doc.text('TOTAL DE IMPOSTOS CALCULADOS', margin + 100, 175);
+    doc.text('FATURAMENTO BRUTO ACUMULADO', margin + 10, 165);
+    doc.text('TOTAL DE IMPOSTOS CALCULADOS', margin + 100, 165);
 
     doc.setFontSize(14); doc.setFont('helvetica', 'bold');
-    doc.text(`R$ ${totalFat.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, margin + 10, 183);
-    doc.text(`R$ ${totalImp.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, margin + 100, 183);
+    doc.text(`R$ ${totalFat.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, margin + 10, 173);
+    doc.text(`R$ ${totalImp.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`, margin + 100, 173);
 
     // 5. Tabelas
     doc.setFontSize(13);
     doc.setFont('helvetica', 'bold');
     doc.setTextColor(15, 23, 42);
-    doc.text('CRONOGRAMA DE OBRIGAÇÕES', margin, 205);
+    doc.text('CRONOGRAMA DE OBRIGAÇÕES', margin, 195);
 
     autoTable(doc, {
-      startY: 210,
+      startY: 200,
       head: [['OBRIGAÇÃO', 'VENCIMENTO', 'STATUS']],
       body: obligations.map(ob => [
         ob.name.toUpperCase(), 
